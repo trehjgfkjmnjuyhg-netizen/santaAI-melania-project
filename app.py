@@ -5,12 +5,12 @@ from google import genai
 from google.genai import types
 
 # --- КОНФИГУРАЦИЯ БЕЗОПАСНОСТИ ---
-# Мы не пишем ключ здесь. Мы берем его из системы (Environment Variables)
-API_KEY = os.getenv("GEMINI_API_KEY") 
+# Берем ключ из "Environment Variables" на Render
+API_KEY = os.getenv("GEMINI_API_KEY")
 
 app = Flask(__name__)
-# Разрешаем запросы со всех адресов (важно для работы фронтенда в сети)
-CORS(app, resources={r"/api/*": {"origins": "*"}})
+# Упрощенный CORS для максимальной совместимости
+CORS(app)
 
 client = None
 if API_KEY:
@@ -30,41 +30,53 @@ ERROR_MESSAGES = {
     "es": "¡Oh, los renos se han enredado! Papá Noel necesita un descanso."
 }
 
-@app.route('/api/santa-chat', methods=['POST'])
+@app.route('/api/santa-chat', methods=['POST', 'OPTIONS'])
 def santa_chat():
+    # Обработка предварительных запросов браузера (CORS preflight)
+    if request.method == 'OPTIONS':
+        return '', 204
+
     if not client:
         return jsonify({"santaReply": "Ошибка конфигурации сервера (API Key missing)"}), 500
         
-    data = request.get_json()
-    user_message = data.get('message', '')
-    system_prompt = data.get('systemPrompt', 'Я — Санта Клаус.')
-    history_data = data.get('history', [])
-
-    # Определяем язык для сообщения об ошибке
-    lang_code = "ru"
-    if "Santa Claus" in system_prompt: lang_code = "en"
-    elif "Weihnachtsmann" in system_prompt: lang_code = "de"
-    elif "Père Noël" in system_prompt: lang_code = "fr"
-    elif "Papá Noel" in system_prompt: lang_code = "es"
-    
-    # Формируем историю для ИИ
-    contents = []
-    for entry in history_data:
-        contents.append(types.Content(role=entry['role'], parts=[types.Part(text=entry['content'])]))
-    contents.append(types.Content(role="user", parts=[types.Part(text=user_message)]))
-
     try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"santaReply": "Пустой запрос"}), 400
+
+        user_message = data.get('message', '')
+        system_prompt = data.get('systemPrompt', 'Я — Санта Клаус.')
+        history_data = data.get('history', [])
+
+        # Определяем язык для сообщения об ошибке на основе промпта
+        lang_code = "ru"
+        if "Santa Claus" in system_prompt: lang_code = "en"
+        elif "Weihnachtsmann" in system_prompt: lang_code = "de"
+        elif "Père Noël" in system_prompt: lang_code = "fr"
+        elif "Papá Noel" in system_prompt: lang_code = "es"
+        
+        # Формируем историю для ИИ
+        contents = []
+        for entry in history_data:
+            role = "user" if entry['role'] == "user" else "model"
+            contents.append(types.Content(role=role, parts=[types.Part(text=entry['content'])]))
+        
+        contents.append(types.Content(role="user", parts=[types.Part(text=user_message)]))
+
+        # Запрос к Gemini
         response = client.models.generate_content(
             model='gemini-1.5-flash',
             contents=contents,
             config=types.GenerateContentConfig(system_instruction=system_prompt, temperature=0.7)
         )
+        
         return jsonify({"santaReply": response.text}), 200
+
     except Exception as e:
         print(f"Ошибка при генерации ответа: {e}")
         return jsonify({"santaReply": ERROR_MESSAGES.get(lang_code, ERROR_MESSAGES["ru"])}), 500
 
 if __name__ == '__main__':
-    # На сервере порт обычно задается переменной окружения
+    # Render автоматически подставит нужный порт
     port = int(os.environ.get('PORT', 5001))
     app.run(debug=False, port=port, host='0.0.0.0')
