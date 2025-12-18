@@ -1,3 +1,4 @@
+
 const API_URL = 'https://santaal-melania-project.onrender.com/chat';
 
 async function sendMessage() {
@@ -18,10 +19,9 @@ async function sendMessage() {
         if (data.reply) {
             addMessage(data.reply, 'santa');
         } else {
-            addMessage('Ох, олени запутались! Попробуй еще раз 🦌', 'santa');
+            addMessage('Ох, олени запутались! 🦌', 'santa');
         }
     } catch (error) {
-        console.error('Error:', error);
         addMessage('Ошибка связи с Северным полюсом... ❄️', 'santa');
     }
 }
