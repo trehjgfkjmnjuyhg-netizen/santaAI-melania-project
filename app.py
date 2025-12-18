@@ -31,7 +31,6 @@ def post_chat():
     try:
         data = request.json
         user_message = data.get('message', '')
-        
         system_instruction = "Ты — добрый Санта. Отвечай тепло, с эмодзи 🎅🎄. На языке пользователя."
 
         response = client.models.generate_content(
@@ -39,7 +38,6 @@ def post_chat():
             contents=user_message,
             config={'system_instruction': system_instruction, 'temperature': 0.8}
         )
-        
         return jsonify({"reply": response.text})
     except Exception as e:
         logger.error(f"❌ Ошибка генерации: {str(e)}")
