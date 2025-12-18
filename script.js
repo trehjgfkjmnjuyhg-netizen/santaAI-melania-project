@@ -14,10 +14,7 @@ async function sendMessage() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ message: message })
         });
-
         const data = await response.json();
-        
-        // Берем поле 'reply' из нашего нового app.py
         if (data.reply) {
             addMessage(data.reply, 'santa');
         } else {
