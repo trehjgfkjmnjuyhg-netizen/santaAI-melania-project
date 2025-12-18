@@ -17,6 +17,7 @@ async function sendMessage() {
 
         const data = await response.json();
         
+        // Берем поле 'reply' из нашего нового app.py
         if (data.reply) {
             addMessage(data.reply, 'santa');
         } else {
@@ -30,6 +31,7 @@ async function sendMessage() {
 
 function addMessage(text, sender) {
     const chatBox = document.getElementById('chat-box');
+    if (!chatBox) return;
     const msgDiv = document.createElement('div');
     msgDiv.className = `message ${sender}-message`;
     msgDiv.innerText = text;
