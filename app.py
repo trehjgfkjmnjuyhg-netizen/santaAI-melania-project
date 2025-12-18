@@ -22,7 +22,7 @@ except Exception as e:
 
 @app.route('/')
 def home():
-    return "Santa's API is Running!", 200
+    return "Santa is awake!", 200
 
 @app.route('/chat', methods=['POST'])
 def post_chat():
@@ -38,7 +38,6 @@ def post_chat():
         )
         return jsonify({"reply": response.text})
     except Exception as e:
-        logger.error(f"❌ Ошибка генерации: {str(e)}")
         return jsonify({"error": "Олени запутались"}), 500
 
 if __name__ == '__main__':
