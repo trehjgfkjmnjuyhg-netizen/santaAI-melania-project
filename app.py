@@ -4,48 +4,56 @@ from flask_cors import CORS
 from google import genai
 from google.genai import types
 
-# --- КОНФИГУРАЦИЯ ---
-API_KEY = "AIzaSyCi0AooUUV8I2wo2mvOaPT2_xyWbcCDNIs" 
+# --- КОНФИГУРАЦИЯ БЕЗОПАСНОСТИ ---
+# Мы не пишем ключ здесь. Мы берем его из системы (Environment Variables)
+API_KEY = os.getenv("GEMINI_API_KEY") 
 
 app = Flask(__name__)
+# Разрешаем запросы со всех адресов (важно для работы фронтенда в сети)
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 client = None
-try:
-    if API_KEY:
+if API_KEY:
+    try:
         client = genai.Client(api_key=API_KEY)
-    print("Сервер Санты готов к чудесам!")
-except Exception as e:
-    print(f"Ошибка API: {e}")
+        print("Сервер Санты успешно подключен к ИИ!")
+    except Exception as e:
+        print(f"Ошибка подключения к Google AI Studio: {e}")
+else:
+    print("ВНИМАНИЕ: Переменная GEMINI_API_KEY не найдена!")
 
 ERROR_MESSAGES = {
-    "ru": "Ох, олени запутались! (Попробуй через 30 секунд, Санте нужно передохнуть)",
-    "en": "Oh, the reindeer got tangled! (Please try again in 30 seconds)",
-    "de": "Oh, die Rentiere haben sich verfangen! (Versuchen Sie es in 30 Sekunden erneut)",
-    "fr": "Oh, les rennes se sont emmêlés ! (Réessayez dans 30 secondes)",
-    "es": "¡Oh, los renos se han enredado! (Inténtalo de nuevo en 30 segundos)"
+    "ru": "Ох, олени запутались! Санте нужно немного передохнуть.",
+    "en": "Oh, the reindeer got tangled! Santa needs a little break.",
+    "de": "Oh, die Rentiere haben sich verfangen! Santa braucht eine Pause.",
+    "fr": "Oh, les rennes se sont emmêlés ! Le Père Noël a besoin d'une pause.",
+    "es": "¡Oh, los renos se han enredado! Papá Noel necesita un descanso."
 }
 
 @app.route('/api/santa-chat', methods=['POST'])
 def santa_chat():
+    if not client:
+        return jsonify({"santaReply": "Ошибка конфигурации сервера (API Key missing)"}), 500
+        
     data = request.get_json()
     user_message = data.get('message', '')
     system_prompt = data.get('systemPrompt', 'Я — Санта Клаус.')
     history_data = data.get('history', [])
 
+    # Определяем язык для сообщения об ошибке
     lang_code = "ru"
     if "Santa Claus" in system_prompt: lang_code = "en"
     elif "Weihnachtsmann" in system_prompt: lang_code = "de"
     elif "Père Noël" in system_prompt: lang_code = "fr"
     elif "Papá Noel" in system_prompt: lang_code = "es"
     
+    # Формируем историю для ИИ
     contents = []
     for entry in history_data:
         contents.append(types.Content(role=entry['role'], parts=[types.Part(text=entry['content'])]))
     contents.append(types.Content(role="user", parts=[types.Part(text=user_message)]))
 
     try:
-        # ИСПРАВЛЕНИЕ 404: Используем прямое имя модели
         response = client.models.generate_content(
             model='gemini-1.5-flash',
             contents=contents,
@@ -53,8 +61,10 @@ def santa_chat():
         )
         return jsonify({"santaReply": response.text}), 200
     except Exception as e:
-        print(f"Ошибка: {e}")
+        print(f"Ошибка при генерации ответа: {e}")
         return jsonify({"santaReply": ERROR_MESSAGES.get(lang_code, ERROR_MESSAGES["ru"])}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5001, host='0.0.0.0')
+    # На сервере порт обычно задается переменной окружения
+    port = int(os.environ.get('PORT', 5001))
+    app.run(debug=False, port=port, host='0.0.0.0')
