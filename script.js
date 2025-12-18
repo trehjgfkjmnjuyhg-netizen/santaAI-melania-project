@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
         chatBox.scrollTop = chatBox.scrollHeight;
 
         try {
-            const res = await fetch('http://127.0.0.1:5001/api/santa-chat', {
+            const res = await fetch('https://santaai-melania-project.onrender.com/api/santa-chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ message: msg, systemPrompt: SYSTEM_PROMPTS[currentLang], history: chatHistory.slice(-6) })
