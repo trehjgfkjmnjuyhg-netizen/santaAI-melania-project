@@ -14,7 +14,6 @@ async function sendMessage() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ message: message })
         });
-
         const data = await response.json();
         if (data.reply) {
             addMessage(data.reply, 'santa');
@@ -22,7 +21,6 @@ async function sendMessage() {
             addMessage('Ох, олени запутались! Попробуй еще раз 🦌', 'santa');
         }
     } catch (error) {
-        console.error('Error:', error);
         addMessage('Ошибка связи с Северным полюсом... ❄️', 'santa');
     }
 }
