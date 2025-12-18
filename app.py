@@ -11,16 +11,14 @@ app = Flask(__name__)
 CORS(app) 
 
 API_KEY = os.environ.get('GEMINI_API_KEY')
-
 client = None
+
 try:
     if API_KEY:
         client = genai.Client(api_key=API_KEY, http_options={'api_version': 'v1'})
         logger.info("✅ Сервер Санты успешно подключен к ИИ (v1)!")
-    else:
-        logger.error("❌ ОШИБКА: API ключ не найден!")
 except Exception as e:
-    logger.error(f"❌ Ошибка инициализации: {str(e)}")
+    logger.error(f"❌ Ошибка: {str(e)}")
 
 @app.route('/')
 def home():
@@ -40,7 +38,6 @@ def post_chat():
         )
         return jsonify({"reply": response.text})
     except Exception as e:
-        logger.error(f"❌ Ошибка генерации: {str(e)}")
         return jsonify({"error": "Олени запутались"}), 500
 
 if __name__ == '__main__':
