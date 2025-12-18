@@ -8,7 +8,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
-CORS(app) # Разрешаем сайту обращаться к серверу
+CORS(app) 
 
 API_KEY = os.environ.get('GEMINI_API_KEY')
 
@@ -18,9 +18,9 @@ try:
         client = genai.Client(api_key=API_KEY, http_options={'api_version': 'v1'})
         logger.info("✅ Сервер Санты успешно подключен к ИИ (v1)!")
     else:
-        logger.error("❌ ОШИБКА: Ключ не найден!")
+        logger.error("❌ ОШИБКА: API ключ не найден!")
 except Exception as e:
-    logger.error(f"❌ Ошибка клиента: {str(e)}")
+    logger.error(f"❌ Ошибка инициализации: {str(e)}")
 
 @app.route('/')
 def home():
@@ -32,8 +32,7 @@ def post_chat():
         data = request.json
         user_message = data.get('message', '')
         
-        # Инструкция для ИИ
-        system_instruction = "Ты — добрый Дедушка Мороз. Отвечай сказочно и тепло с эмодзи 🎅🎄. Отвечай на языке пользователя."
+        system_instruction = "Ты — добрый Санта. Отвечай тепло, с эмодзи 🎅🎄. На языке пользователя."
 
         response = client.models.generate_content(
             model='gemini-1.5-flash',
@@ -43,8 +42,8 @@ def post_chat():
         
         return jsonify({"reply": response.text})
     except Exception as e:
-        logger.error(f"❌ Ошибка: {str(e)}")
-        return jsonify({"error": "Олени запутались в проводах"}), 500
+        logger.error(f"❌ Ошибка генерации: {str(e)}")
+        return jsonify({"error": "Олени запутались"}), 500
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 10000))
