@@ -18,7 +18,7 @@ try:
         client = genai.Client(api_key=API_KEY, http_options={'api_version': 'v1'})
         logger.info("✅ Сервер Санты успешно подключен к ИИ (v1)!")
 except Exception as e:
-    logger.error(f"❌ Ошибка: {str(e)}")
+    logger.error(f"❌ Ошибка инициализации: {str(e)}")
 
 @app.route('/')
 def home():
@@ -38,6 +38,7 @@ def post_chat():
         )
         return jsonify({"reply": response.text})
     except Exception as e:
+        logger.error(f"❌ Ошибка генерации: {str(e)}")
         return jsonify({"error": "Олени запутались"}), 500
 
 if __name__ == '__main__':
