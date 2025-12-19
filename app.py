@@ -4,6 +4,7 @@ from flask_cors import CORS
 from google import genai
 from google.genai import types
 
+# Твой ключ и настройки
 API_KEY = "AIzaSyCi0AooUUV8I2wo2mvOaPT2_xyWbcCDNIs"
 
 app = Flask(__name__)
@@ -11,35 +12,43 @@ CORS(app)
 
 client = genai.Client(api_key=API_KEY)
 
-# Добавляем переводы ошибок
+# Переводы сообщений об ошибках
 ERROR_MESSAGES = {
     "ru": "Ох, олени запутались! Попробуй еще раз через минуту.",
     "en": "Oh, the reindeer got tangled! Please try again in a minute.",
-    "de": "Oh, die Rentiere haben sich verfangen! Bitte versuchen Sie es in einer Minute erneut.",
-    "fr": "Oh, les rennes se sont emmêlés ! Veuillez réessayer dans une minute.",
-    "es": "¡Oh, los renos se han enredado! Por favor, inténtalo de nuevo en un minuto."
+    "de": "Oh, die Rentiere haben sich verfangen!",
+    "fr": "Oh, les rennes se sont emmêlés !",
+    "es": "¡Oh, los renos se han enredado!"
 }
 
+# 1. Проверка, что сервер работает (для Render)
 @app.route('/')
 def home():
     return "Santa's Server is Running!", 200
+
+# 2. Главная функция чата с Сантой (ЕЁ НУЖНО ВЕРНУТЬ!)
+@app.route('/api/santa-chat', methods=['POST'])
+def santa_chat():
+    data = request.get_json()
     user_message = data.get('message', '')
     system_prompt = data.get('systemPrompt', 'Я — Санта Клаус.')
     history_data = data.get('history', [])
 
-    # Определяем язык для ошибки по системному промпту
+    # Определяем язык
     lang = "ru"
     if "Santa Claus" in system_prompt: lang = "en"
     elif "Weihnachtsmann" in system_prompt: lang = "de"
     elif "Père Noël" in system_prompt: lang = "fr"
     elif "Papá Noel" in system_prompt: lang = "es"
-
+    
+    # Собираем историю сообщений
     contents = []
     for entry in history_data:
         contents.append(types.Content(role=entry['role'], parts=[types.Part(text=entry['content'])]))
     contents.append(types.Content(role="user", parts=[types.Part(text=user_message)]))
 
     try:
+        # Запрос к ИИ
         response = client.models.generate_content(
             model='gemini-1.5-flash',
             contents=contents,
