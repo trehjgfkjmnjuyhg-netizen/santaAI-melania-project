@@ -1,51 +1,48 @@
 import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from google import genai
-from google.genai import types
+import google.generativeai as genai
 
-# --- БЕЗОПАСНАЯ КОНФИГУРАЦИЯ ---
+# --- БЕЗОПАСНАЯ НАСТРОЙКА ---
 API_KEY = os.getenv("GEMINI_API_KEY")
 
 app = Flask(__name__)
-# Разрешаем CORS только для твоего домена GitHub для безопасности
-CORS(app)
+# Разрешаем запросы со всех адресов для связи GitHub и Render
+CORS(app, resources={r"/api/*": {"origins": "*"}})
 
-client = None
-if API_KEY:
-    try:
-        client = genai.Client(api_key=API_KEY)
+try:
+    if API_KEY:
+        genai.configure(api_key=API_KEY)
+        # Используем стабильную модель gemini-1.5-flash
+        model = genai.GenerativeModel('gemini-1.5-flash')
         print("Сервер Санты готов к чудесам!")
-    except Exception as e:
-        print(f"Ошибка инициализации API: {e}")
+    else:
+        print("ОШИБКА: Переменная GEMINI_API_KEY не найдена в Render!")
+except Exception as e:
+    print(f"Ошибка настройки API: {e}")
 
 @app.route('/')
 def home():
-    return "Santa is Secure and Online!", 200
+    return "Santa is Online and Secure!", 200
 
-@app.route('/api/santa-chat', methods=['POST'])
+@app.route('/api/santa-chat', methods=['POST', 'OPTIONS'])
 def santa_chat():
-    if not client:
-        return jsonify({"santaReply": "Ошибка: API ключ не настроен на сервере."}), 500
-    
+    if request.method == 'OPTIONS':
+        return '', 200
+        
     try:
         data = request.get_json()
         user_message = data.get('message', '')
-        system_prompt = data.get('systemPrompt', 'Я — Санта Клаус.')
         
-        response = client.models.generate_content(
-            model='gemini-1.5-flash',
-            contents=user_message,
-            config=types.GenerateContentConfig(
-                system_instruction=system_prompt,
-                temperature=0.7
-            )
-        )
-        
+        if not user_message:
+            return jsonify({"santaReply": "Хо-хо-хо! Я тебя не расслышал."}), 200
+
+        # Прямой запрос к нейросети
+        response = model.generate_content(user_message)
         return jsonify({"santaReply": response.text}), 200
     except Exception as e:
-        print(f"Ошибка чата: {e}")
-        return jsonify({"santaReply": "Хо-хо-хо! Олени запутались в проводах, попробуй еще раз!"}), 200
+        print(f"Ошибка: {e}")
+        return jsonify({"santaReply": f"Ой! Снежинка попала в провода: {str(e)}"}), 200
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 10000))
