@@ -7,11 +7,11 @@ const UI_TEXTS = {
 };
 
 const SYSTEM_PROMPTS = {
-    'ru': "Я — Санта Клаус, дружелюбный и мудрый.",
-    'en': "I am Santa Claus, friendly and wise.",
-    'de': "Ich bin der Weihnachtsmann.",
-    'fr': "Je suis le Père Noël.",
-    'es': "Soy Papá Noel."
+    'ru': "Я — Санта Клаус, дружелюбный и мудрый. Моя цель — вдохновлять на добрые дела.",
+    'en': "I am Santa Claus, friendly and wise. My goal is to inspire good deeds.",
+    'de': "Ich bin der Weihnachtsmann. Mein Ziel ist es, zu guten Taten zu inspirieren.",
+    'fr': "Je suis le Père Noël. Mon but est d'inspirer les bonnes actions.",
+    'es': "Soy Papá Noel. Mi objetivo es inspirar buenas acciones."
 };
 
 let currentLang = localStorage.getItem('santaLang') || 'ru';
@@ -54,13 +54,14 @@ document.addEventListener('DOMContentLoaded', () => {
             appendMessage(data.santaReply, 'santa');
         } catch {
             typingIndicator.style.display = 'none';
-            appendMessage("Ошибка связи с Северным полюсом...", 'santa');
+            appendMessage("Ошибка связи с Полюсом... ❄️", 'santa');
         }
     }
 
     function updateInterface(lang) {
         currentLang = lang;
         localStorage.setItem('santaLang', lang);
+        document.querySelectorAll('.lang-sock').forEach(btn => btn.classList.toggle('active', btn.dataset.lang === lang));
         document.getElementById('header-title').textContent = UI_TEXTS[lang].title;
         document.getElementById('header-subtitle').textContent = UI_TEXTS[lang].subtitle;
         userInput.placeholder = UI_TEXTS[lang].input_placeholder;
@@ -79,6 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function initSnow() {
+    if (document.getElementById('snow-canvas')) return;
     const canvas = document.createElement('canvas');
     canvas.id = 'snow-canvas';
     document.body.prepend(canvas);
