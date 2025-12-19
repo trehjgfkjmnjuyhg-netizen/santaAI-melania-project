@@ -1,26 +1,29 @@
+// Адрес вашего живого сервера на Render
 const API_URL = 'https://santaal-melania-project.onrender.com/chat';
 let currentLang = 'ru';
 
-// 1. Функция переключения языков
+// 1. Возвращаем переключение языков
 function setLanguage(lang) {
     currentLang = lang;
-    const prompts = {
+    const placeholders = {
         'ru': 'Напишите Санте...',
         'en': 'Write to Santa...',
         'de': 'Schreib an den Weihnachtsmann...',
         'fr': 'Écrire au Père Noël...',
         'es': 'Escribir a Papá Noel...'
     };
-    document.getElementById('user-input').placeholder = prompts[lang] || prompts['ru'];
-    console.log('Язык изменен на:', lang);
+    const input = document.getElementById('user-input');
+    if (input) input.placeholder = placeholders[lang] || placeholders['ru'];
+    console.log('Язык переключен на:', lang);
 }
 
-// 2. Функция открытия письма/инструкции
+// 2. Оживляем кнопку письма (Wishlist)
 function openWishlist() {
     alert("Санта внимательно читает твои пожелания! Напиши ему в чате прямо сейчас. 🎅🎁");
+    // Если у вас есть файл wishlist.html, можно заменить на: window.location.href = 'wishlist.html';
 }
 
-// 3. Функция отправки сообщения
+// 3. Исправленная функция отправки сообщения
 async function sendMessage() {
     const input = document.getElementById('user-input');
     const message = input.value.trim();
@@ -40,18 +43,20 @@ async function sendMessage() {
         });
 
         const data = await response.json();
+        
+        // Берем ответ из поля 'reply', как прописано в вашем app.py
         if (data.reply) {
             addMessage(data.reply, 'santa');
         } else {
             addMessage('Ох, олени запутались! Попробуй еще раз 🦌', 'santa');
         }
     } catch (error) {
-        console.error('Error:', error);
+        console.error('Ошибка:', error);
         addMessage('Ошибка связи с Северным полюсом... ❄️', 'santa');
     }
 }
 
-// 4. Добавление сообщений в чат
+// 4. Функция отображения сообщений
 function addMessage(text, sender) {
     const chatBox = document.getElementById('chat-box');
     if (!chatBox) return;
@@ -62,7 +67,7 @@ function addMessage(text, sender) {
     chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-// Позволяем отправлять через Enter
+// Подключаем отправку через клавишу Enter
 document.getElementById('user-input')?.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') sendMessage();
 });
