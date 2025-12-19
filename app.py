@@ -2,44 +2,34 @@ import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from google import genai
-import logging
+from google.genai import types
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+API_KEY = "AIzaSyCi0AooUUV8I2wo2mvOaPT2_xyWbcCDNIs"
 
 app = Flask(__name__)
-CORS(app) 
+CORS(app)
 
-API_KEY = os.environ.get('GEMINI_API_KEY')
-client = None
+client = genai.Client(api_key=API_KEY)
 
-try:
-    if API_KEY:
-        client = genai.Client(api_key=API_KEY, http_options={'api_version': 'v1'})
-        logger.info("✅ Сервер Санты успешно подключен к ИИ (v1)!")
-except Exception as e:
-    logger.error(f"❌ Ошибка инициализации: {str(e)}")
+@app.route('/api/santa-chat', methods=['POST'])
+def santa_chat():
+    data = request.get_json()
+    user_message = data.get('message', '')
+    system_prompt = data.get('systemPrompt', 'Я — Санта Клаус.')
+    history_data = data.get('history', [])
 
-@app.route('/')
-def home():
-    return "Santa is awake!", 200
+    contents = [types.Content(role=e['role'], parts=[types.Part(text=e['content'])]) for e in history_data]
+    contents.append(types.Content(role="user", parts=[types.Part(text=user_message)]))
 
-@app.route('/chat', methods=['POST'])
-def post_chat():
     try:
-        data = request.json
-        user_message = data.get('message', '')
-        system_instruction = "Ты — добрый Санта. Отвечай тепло, с эмодзи 🎅🎄. На языке пользователя."
-
         response = client.models.generate_content(
             model='gemini-1.5-flash',
-            contents=user_message,
-            config={'system_instruction': system_instruction, 'temperature': 0.8}
+            contents=contents,
+            config=types.GenerateContentConfig(system_instruction=system_prompt)
         )
-        return jsonify({"reply": response.text})
+        return jsonify({"santaReply": response.text}), 200
     except Exception as e:
-        return jsonify({"error": "Олени запутались"}), 500
+        return jsonify({"santaReply": "Ох, олени запутались в снегу!"}), 500
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 10000))
-    app.run(host='0.0.0.0', port=port)
+    app.run(host='0.0.0.0', port=10000)
