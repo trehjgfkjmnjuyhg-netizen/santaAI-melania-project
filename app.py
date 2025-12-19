@@ -21,36 +21,32 @@ ERROR_MESSAGES = {
     "es": "¡Oh, los renos se han enredado!"
 }
 
-# 1. Проверка, что сервер работает (для Render)
 @app.route('/')
 def home():
     return "Santa's Server is Running!", 200
 
-# 2. Главная функция чата с Сантой (ЕЁ НУЖНО ВЕРНУТЬ!)
 @app.route('/api/santa-chat', methods=['POST'])
 def santa_chat():
-    data = request.get_json()
-    user_message = data.get('message', '')
-    system_prompt = data.get('systemPrompt', 'Я — Санта Клаус.')
-    history_data = data.get('history', [])
-
-    # Определяем язык
-    lang = "ru"
-    if "Santa Claus" in system_prompt: lang = "en"
-    elif "Weihnachtsmann" in system_prompt: lang = "de"
-    elif "Père Noël" in system_prompt: lang = "fr"
-    elif "Papá Noel" in system_prompt: lang = "es"
-    
-    # Собираем историю сообщений
-    contents = []
-    for entry in history_data:
-        contents.append(types.Content(role=entry['role'], parts=[types.Part(text=entry['content'])]))
-    contents.append(types.Content(role="user", parts=[types.Part(text=user_message)]))
-
     try:
-        # Запрос к ИИ
+        data = request.get_json()
+        user_message = data.get('message', '')
+        system_prompt = data.get('systemPrompt', 'Я — Санта Клаус.')
+        history_data = data.get('history', [])
+
+        lang = "ru"
+        if "Santa Claus" in system_prompt: lang = "en"
+        elif "Weihnachtsmann" in system_prompt: lang = "de"
+        elif "Père Noël" in system_prompt: lang = "fr"
+        elif "Papá Noel" in system_prompt: lang = "es"
+        
+        contents = []
+        for entry in history_data:
+            contents.append(types.Content(role=entry['role'], parts=[types.Part(text=entry['content'])]))
+        contents.append(types.Content(role="user", parts=[types.Part(text=user_message)]))
+
+        # ИСПРАВЛЕННАЯ СТРОКА ТУТ:
         response = client.models.generate_content(
-            model='models/gemini-1.5-flash'
+            model='gemini-1.5-flash',
             contents=contents,
             config=types.GenerateContentConfig(system_instruction=system_prompt, temperature=0.7)
         )
