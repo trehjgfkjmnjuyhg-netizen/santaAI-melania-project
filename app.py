@@ -20,9 +20,9 @@ ERROR_MESSAGES = {
     "es": "¡Oh, los renos se han enredado! Por favor, inténtalo de nuevo en un minuto."
 }
 
-@app.route('/api/santa-chat', methods=['POST'])
-def santa_chat():
-    data = request.get_json()
+@app.route('/')
+def home():
+    return "Santa's Server is Running!", 200
     user_message = data.get('message', '')
     system_prompt = data.get('systemPrompt', 'Я — Санта Клаус.')
     history_data = data.get('history', [])
