@@ -45,6 +45,7 @@
             if (m && m.paused) m.play().catch(() => {});
         };
         document.body.addEventListener('click', playMusic, {once: true});
+        document.body.addEventListener('touchstart', playMusic, {once: true});
     </script>
 </body>
 </html>
