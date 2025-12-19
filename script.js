@@ -1,9 +1,9 @@
 const UI_TEXTS = {
-    'ru': { title: 'Санта Клаус', subtitle: 'На Северном полюсе...', input_placeholder: 'Напишите Санте...', welcome: 'Хо-хо-хо! Я — Санта Клаус. Как тебя зовут?', wishlist_link: 'Хочу стать Сантой!', typing: 'Санта пишет...' },
-    'en': { title: 'Santa Claus', subtitle: 'At the North Pole...', input_placeholder: 'Write to Santa...', welcome: 'Ho-ho-ho! I am Santa Claus. What is your name?', wishlist_link: 'I want to be Santa!', typing: 'Santa is typing...' },
-    'de': { title: 'Weihnachtsmann', subtitle: 'Am Nordpol...', input_placeholder: 'Schreiben...', welcome: 'Ich bin der Weihnachtsmann. Wie heißen Sie?', wishlist_link: 'Ich möchte Weihnachtsmann sein!', typing: 'Schreibt...' },
-    'fr': { title: 'Père Noël', subtitle: 'Au Pôle Nord...', input_placeholder: 'Écrire...', welcome: 'Je suis le Père Noël. Quel est ton nom?', wishlist_link: 'Devenez le Père Noël !', typing: 'Écrit...' },
-    'es': { title: 'Papá Noel', subtitle: 'En el Polo Norte...', input_placeholder: 'Escribir...', welcome: 'Soy Papá Noel. ¿Cómo te llamas?', wishlist_link: '¡Quiero ser Papá Noel!', typing: 'Escribiendo...' }
+    'ru': { title: 'Санта Клаус', subtitle: 'На Северном полюсе...', input_placeholder: 'Напишите Санте...', welcome: 'Хо-хо-хо! Я — Санта Клаус. Как тебя зовут?', wishlist_link: 'Хочу стать Сантой!', typing: 'Санта пишет...', error: 'Ошибка связи с Полюсом... ❄️' },
+    'en': { title: 'Santa Claus', subtitle: 'At the North Pole...', input_placeholder: 'Write to Santa...', welcome: 'Ho-ho-ho! I am Santa Claus. What is your name?', wishlist_link: 'I want to be Santa!', typing: 'Santa is typing...', error: 'Communication error with the Pole... ❄️' },
+    'de': { title: 'Weihnachtsmann', subtitle: 'Am Nordpol...', input_placeholder: 'Schreiben...', welcome: 'Ich bin der Weihnachtsmann. Wie heißen Sie?', wishlist_link: 'Ich möchte Weihnachtsmann sein!', typing: 'Schreibt...', error: 'Verbindungsfehler zum Pol... ❄️' },
+    'fr': { title: 'Père Noël', subtitle: 'Au Pôle Nord...', input_placeholder: 'Écrire...', welcome: 'Je suis le Père Noël. Quel est ton nom?', wishlist_link: 'Devenez le Père Noël !', typing: 'Écrit...', error: 'Erreur de communication... ❄️' },
+    'es': { title: 'Papá Noel', subtitle: 'En el Polo Norte...', input_placeholder: 'Escribir...', welcome: 'Soy Papá Noel. ¿Cómo te llamas?', wishlist_link: '¡Quiero ser Papá Noel!', typing: 'Escribiendo...', error: 'Error de comunicación... ❄️' }
 };
 
 const SYSTEM_PROMPTS = {
@@ -15,7 +15,8 @@ const SYSTEM_PROMPTS = {
 };
 
 let currentLang = localStorage.getItem('santaLang') || 'ru';
-let chatHistory = [];
+// Загружаем историю из памяти браузера при входе
+let chatHistory = JSON.parse(localStorage.getItem('santaChatHistory')) || [];
 
 document.addEventListener('DOMContentLoaded', () => {
     initSnow(); 
@@ -24,13 +25,32 @@ document.addEventListener('DOMContentLoaded', () => {
     const userInput = document.getElementById('user-input');
     const wishlistLink = document.getElementById('wishlist-link-main');
 
-    function appendMessage(text, sender) {
+    function saveHistory() {
+        localStorage.setItem('santaChatHistory', JSON.stringify(chatHistory));
+    }
+
+    function appendMessage(text, sender, shouldSave = true) {
         const div = document.createElement('div');
         div.classList.add(sender);
         div.innerHTML = `<p>${text.replace(/\n/g, '<br>')}</p>`;
         chatBox.appendChild(div);
         chatBox.scrollTop = chatBox.scrollHeight;
-        chatHistory.push({role: sender === 'santa' ? 'assistant' : 'user', content: text});
+        if (shouldSave) {
+            chatHistory.push({role: sender === 'santa' ? 'assistant' : 'user', content: text});
+            saveHistory();
+        }
+    }
+
+    function loadMessages() {
+        chatBox.innerHTML = '';
+        if (chatHistory.length === 0) {
+            appendMessage(UI_TEXTS[currentLang].welcome, 'santa');
+        } else {
+            chatHistory.forEach(msg => {
+                const sender = msg.role === 'assistant' ? 'santa' : 'user';
+                appendMessage(msg.content, sender, false);
+            });
+        }
     }
 
     async function handleChat(e) {
@@ -47,14 +67,18 @@ document.addEventListener('DOMContentLoaded', () => {
             const res = await fetch('https://santaal-melania-project.onrender.com/api/santa-chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: msg, systemPrompt: SYSTEM_PROMPTS[currentLang], history: chatHistory.slice(-6) })
+                body: JSON.stringify({ 
+                    message: msg, 
+                    systemPrompt: SYSTEM_PROMPTS[currentLang], 
+                    history: chatHistory.slice(-10) 
+                })
             });
             const data = await res.json();
             typingIndicator.style.display = 'none';
             appendMessage(data.santaReply, 'santa');
         } catch {
             typingIndicator.style.display = 'none';
-            appendMessage("Ошибка связи с Полюсом... ❄️", 'santa');
+            appendMessage(UI_TEXTS[currentLang].error, 'santa', false);
         }
     }
 
@@ -66,21 +90,25 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('header-subtitle').textContent = UI_TEXTS[lang].subtitle;
         userInput.placeholder = UI_TEXTS[lang].input_placeholder;
         wishlistLink.textContent = UI_TEXTS[lang].wishlist_link;
-        chatBox.innerHTML = '';
-        appendMessage(UI_TEXTS[lang].welcome, 'santa');
+        loadMessages();
     }
 
     document.getElementById('language-socks').addEventListener('click', (e) => {
         const btn = e.target.closest('.lang-sock');
-        if (btn) updateInterface(btn.dataset.lang);
+        if (btn) {
+            // При смене языка можно очистить историю, чтобы Санта не путался
+            chatHistory = [];
+            saveHistory();
+            updateInterface(btn.dataset.lang);
+        }
     });
 
     document.getElementById('chat-form').addEventListener('submit', handleChat);
     updateInterface(currentLang);
 });
 
+// Функция снега остается без изменений
 function initSnow() {
-    if (document.getElementById('snow-canvas')) return;
     const canvas = document.createElement('canvas');
     canvas.id = 'snow-canvas';
     document.body.prepend(canvas);
@@ -93,8 +121,8 @@ function initSnow() {
         ctx.clearRect(0,0,canvas.width, canvas.height); ctx.fillStyle = "white"; ctx.beginPath();
         flakes.forEach(f => {
             ctx.moveTo(f.x, f.y); ctx.arc(f.x, f.y, f.r, 0, Math.PI*2, true);
-            f.y += 1.5;
-            if(f.y > canvas.height) f.y = -10;
+            f.y += Math.pow(f.d, 2) + 1;
+            if(f.y > canvas.height) { f.y = -10; f.x = Math.random()*canvas.width; }
         });
         ctx.fill(); requestAnimationFrame(draw);
     }
