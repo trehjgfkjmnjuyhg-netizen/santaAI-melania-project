@@ -95,12 +95,15 @@ function updateInterface(lang) {
 }
 
 // Слушатели событий
-sendBtn.addEventListener('click', handleChat);
-userInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleChat(); });
-
-document.querySelectorAll('.lang-sock').forEach(btn => {
-    btn.addEventListener('click', () => updateInterface(btn.dataset.lang));
-});
+// Безопасные слушатели событий
+if (sendBtn) {
+    sendBtn.addEventListener('click', handleChat);
+}
+if (userInput) {
+    userInput.addEventListener('keypress', (e) => { 
+        if (e.key === 'Enter') handleChat(); 
+    });
+}
 
 // Запуск
 const savedLang = localStorage.getItem('santaLang');
