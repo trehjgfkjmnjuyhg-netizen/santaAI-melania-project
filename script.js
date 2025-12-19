@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function handleChat(e) {
         e.preventDefault();
-        const msg = userInput.value.trim();
+        const res = await fetch('https://santaal-melania-project.onrender.com/api/santa-chat', {
         if (!msg) return;
         appendMessage(msg, 'user');
         userInput.value = '';
