@@ -9,20 +9,20 @@ async function handleChat() {
 
     appendMessage(msg, 'user');
     userInput.value = '';
-    typingIndicator.style.display = 'block';
+    if (typingIndicator) typingIndicator.style.display = 'block';
 
     try {
         const res = await fetch('https://santaai-melania-project.onrender.com/api/santa-chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message: msg }) // Отправляем только сообщение
+            body: JSON.stringify({ message: msg })
         });
         const data = await res.json();
-        typingIndicator.style.display = 'none';
+        if (typingIndicator) typingIndicator.style.display = 'none';
         appendMessage(data.santaReply, 'santa');
     } catch (error) {
-        typingIndicator.style.display = 'none';
-        appendMessage("Ох, олени запутались! Попробуй еще раз.", 'santa');
+        if (typingIndicator) typingIndicator.style.display = 'none';
+        appendMessage("Санта на связи, но метель мешает! Попробуй еще раз.", 'santa');
     }
 }
 
@@ -34,9 +34,8 @@ function appendMessage(text, sender) {
     chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-if (sendBtn) sendBtn.addEventListener('click', handleChat);
+// Привязываем события только если кнопки найдены
+if (sendBtn) sendBtn.onclick = handleChat;
 if (userInput) {
-    userInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') { e.preventDefault(); handleChat(); }
-    });
+    userInput.onkeypress = (e) => { if (e.key === 'Enter') handleChat(); };
 }
