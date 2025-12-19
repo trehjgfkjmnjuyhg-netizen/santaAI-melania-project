@@ -65,7 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
     typingIndicator.style.display = 'block';
 
     try {
-        const res = await fetch('https://santaai-melania-project.onrender.com/api/santa-chat', {
+        const res = await fetch{'https://santaai-melania-project.onrender.com/api/santa-chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
