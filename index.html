@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="chat-background">
-    <audio id="bg-music" loop><source src="christmas_music.mp3" type="audio/mpeg"></audio>
+    <audio id="bg-music" loop src="christmas_music.mp3" type="audio/mpeg"></audio>
 
     <div class="chat-container">
         <div class="chat-header">
@@ -26,15 +26,15 @@
         </div>
 
         <div id="chat-box" class="chat-box"></div>
-        <div id="typing-indicator" class="typing-indicator"></div
-                                                                
+        <div id="typing-indicator" class="typing-indicator"></div>
+
         <form id="chat-form" class="chat-input-area">
-            <input type="text" id="user-input" placeholder="...">
-            <button id="send-btn" class="send-btn">➤</button>
+            <input type="text" id="user-input" placeholder="Напишите Санте...">
+            <button type="button" id="send-btn" class="send-btn">➤</button>
         </form>
 
         <div class="footer-link-container">
-            <a href="wishlist.html" class="donation-button" id="wishlist-link-main">Хочу стать Сантой!</a>
+            <a href="wishlist.html" id="wishlist-link-main" class="donation-button">Хочу стать Сантой!</a>
         </div>
     </div>
 
