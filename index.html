@@ -42,10 +42,10 @@
     <script>
         const playMusic = () => {
             const m = document.getElementById('bg-music');
-            if (m) m.play().catch(() => {});
-            document.removeEventListener('click', playMusic);
+            if (m && m.paused) m.play().catch(() => {});
         };
-        document.addEventListener('click', playMusic);
+        document.body.addEventListener('click', playMusic, {once: true});
+        document.body.addEventListener('touchstart', playMusic, {once: true});
     </script>
 </body>
 </html>
