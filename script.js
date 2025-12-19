@@ -63,16 +63,15 @@ document.addEventListener('DOMContentLoaded', () => {
         typingIndicator.textContent = UI_TEXTS[currentLang].typing;
         typingIndicator.style.display = 'block';
 
-        try {
-            const res = await fetch('https://https://santaai-melania-project.onrender.com/api/santa-chat', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    message: msg, 
-                    systemPrompt: SYSTEM_PROMPTS[currentLang], 
-                    history: chatHistory.slice(-10) 
-                })
-            });
+       const res = await fetch('https://santaai-melania-project.onrender.com/api/santa-chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                message: msg,
+                systemPrompt: SYSTEM_PROMPTS[currentLang],
+                history: chatHistory.slice(-10)
+            })
+        });
             const data = await res.json();
             typingIndicator.style.display = 'none';
             appendMessage(data.santaReply, 'santa');
