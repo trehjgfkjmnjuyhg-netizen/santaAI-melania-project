@@ -4,20 +4,20 @@ from flask_cors import CORS
 import google.generativeai as genai
 
 # --- КОНФИГУРАЦИЯ ---
-# Используем ваш рабочий ключ
 API_KEY = "AIzaSyA1599Xpw9MJf-qJLhSxUyNSwYyE2KnkaI" 
 
 app = Flask(__name__)
-# Разрешаем запросы со всех адресов (важно для работы GitHub Pages + Render)
-CORS(app)
+# Разрешаем CORS, чтобы GitHub Pages мог достучаться до Render
+CORS(app, resources={r"/api/*": {"origins": "*"}})
 
+client = None
 try:
     genai.configure(api_key=API_KEY)
-    # Используем версию -latest для стабильной работы в интернете
+    # Используем -latest, чтобы избежать ошибки 404
     model = genai.GenerativeModel('gemini-1.5-flash-latest')
     print("Сервер Санты готов к чудесам!")
 except Exception as e:
-    print(f"Ошибка настройки API: {e}")
+    print(f"Ошибка API: {e}")
 
 ERROR_MESSAGES = {
     "ru": "Ох, олени запутались! (Попробуй через 30 секунд, Санте нужно передохнуть)",
@@ -39,20 +39,21 @@ def santa_chat():
         system_prompt = data.get('systemPrompt', 'Я — Санта Клаус.')
         
         if not user_message:
-            return jsonify({"santaReply": "Хо-хо-хо! Я тебя не расслышал."}), 200
+            return jsonify({"santaReply": "Хо-хо-хо! Я тебя не расслышал, повтори?"}), 200
 
-        # Запрос к нейросети
+        # Генерация контента через Gemini
         response = model.generate_content(
             user_message,
-            generation_config={"temperature": 0.7}
+            generation_config=genai.types.GenerationConfig(temperature=0.7)
         )
         
         return jsonify({"santaReply": response.text}), 200
     except Exception as e:
-        print(f"Ошибка: {e}")
-        return jsonify({"santaReply": ERROR_MESSAGES["ru"]}), 200
+        error_text = str(e)
+        print(f"Ошибка чата: {error_text}")
+        return jsonify({"santaReply": f"Ой! Снежинка попала в провода: {error_text}"}), 200
 
 if __name__ == '__main__':
-    # На Render порт назначается автоматически через переменную окружения
+    # Порт для Render
     port = int(os.environ.get("PORT", 10000))
     app.run(host='0.0.0.0', port=port)
