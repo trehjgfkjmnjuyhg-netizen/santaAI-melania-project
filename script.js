@@ -1,4 +1,4 @@
-// ЗАМЕНИЛИ 127.0.0.1 на ваш реальный URL с Render
+// Правильный адрес вашего сервера на Render
 const RENDER_URL = "https://santaai-melania-project.onrender.com/api/santa-chat";
 
 const UI_TEXTS = {
@@ -60,7 +60,6 @@ document.addEventListener('DOMContentLoaded', () => {
         chatBox.scrollTop = chatBox.scrollHeight;
 
         try {
-            // Используем RENDER_URL вместо локального адреса
             const res = await fetch(RENDER_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -75,7 +74,6 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (err) {
             typingIndicator.style.display = 'none';
             appendMessage("Ошибка связи с Северным полюсом. Санта скоро вернется!", 'santa');
-            console.error(err);
         }
     }
 
