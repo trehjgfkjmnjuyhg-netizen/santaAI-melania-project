@@ -1,17 +1,13 @@
 import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import google.generativeai as genai
+from google import genai # Новая библиотека
 
-# Твой API ключ
 API_KEY = "AIzaSyCi0AooUUV8I2wo2mvOaPT2_xyWbcCDNIs"
 
 app = Flask(__name__)
 CORS(app)
-
-# Настройка прямого подключения
-genai.configure(api_key=API_KEY)
-model = genai.GenerativeModel('gemini-1.5-flash')
+client = genai.Client(api_key=API_KEY) # Новый способ подключения
 
 @app.route('/')
 def home():
@@ -23,14 +19,16 @@ def santa_chat():
         data = request.get_json()
         user_msg = data.get('message', 'Привет')
         
-        # Самый надежный вызов без лишних параметров
-        response = model.generate_content(f"Ты - Санта Клаус. Ответь коротко и сказочно на русском языке: {user_msg}")
+        # Новый формат вызова ИИ
+        response = client.models.generate_content(
+            model="gemini-1.5-flash",
+            contents=f"Ты - Санта Клаус. Отвечай очень тепло и сказочно: {user_msg}"
+        )
         
         return jsonify({"santaReply": response.text}), 200
     except Exception as e:
         print(f"ERROR: {e}")
-        # Если ИИ не ответил, Санта ответит сам
-        return jsonify({"santaReply": "Хо-хо-хо! Я немного занят подарками, но скоро вернусь к тебе!"}), 200
+        return jsonify({"santaReply": "Хо-хо-хо! Мои эльфы уже несут твое письмо!"}), 200
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=10000)
