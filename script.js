@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    async function handleChat(e) {
+ async function handleChat(e) {
     e.preventDefault();
     const msg = userInput.value.trim();
     if (!msg) return;
@@ -83,9 +83,6 @@ document.addEventListener('DOMContentLoaded', () => {
         appendMessage(UI_TEXTS[currentLang].error, 'santa', false);
     }
 }
-            const data = await res.json();
-            typingIndicator.style.display = 'none';
-            appendMessage(data.santaReply, 'santa');
         } catch {
             typingIndicator.style.display = 'none';
             appendMessage(UI_TEXTS[currentLang].error, 'santa', false);
