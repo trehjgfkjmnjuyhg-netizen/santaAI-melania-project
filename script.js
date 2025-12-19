@@ -83,12 +83,6 @@ document.addEventListener('DOMContentLoaded', () => {
         appendMessage(UI_TEXTS[currentLang].error, 'santa', false);
     }
 }
-        } catch {
-            typingIndicator.style.display = 'none';
-            appendMessage(UI_TEXTS[currentLang].error, 'santa', false);
-        }
-    }
-
     function updateInterface(lang) {
         currentLang = lang;
         localStorage.setItem('santaLang', lang);
