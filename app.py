@@ -31,7 +31,7 @@ def santa_chat():
     except Exception as e:
         print(f"Ошибка чата: {e}")
         # Если ключ не работает, мы увидим это в чате
-        return jsonify({"santaReply": "Хо-хо-хо! Мой магический ключ API замерз. Проверь его в Google AI Studio!"}), 200
+        return jsonify({"santaReply": f"Ой! Снежинка попала в провода: {str(e)}"}), 200
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=10000)
