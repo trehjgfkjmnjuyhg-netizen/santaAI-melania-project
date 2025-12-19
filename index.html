@@ -1,47 +1,39 @@
-const chatBox = document.getElementById('chat-box');
-const userInput = document.getElementById('user-input');
-const sendBtn = document.getElementById('send-btn');
-const typingIndicator = document.getElementById('typing-indicator');
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Чат с Сантой</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="chat-background">
+    <audio id="bg-music" loop src="christmas_music.mp3"></audio>
 
-let currentLang = 'ru';
+    <div class="chat-container">
+        <div class="chat-header">
+            <img src="santa_icon.jpg" class="santa-avatar">
+            <div><b id="header-title">Санта Клаус</b></div>
+        </div>
 
-async function handleChat() {
-    const msg = userInput.value.trim();
-    if (!msg) return;
+        <div id="chat-box" class="chat-box"></div>
+        <div id="typing-indicator" class="typing-indicator"></div>
 
-    appendMessage(msg, 'user');
-    userInput.value = '';
-    typingIndicator.style.display = 'block';
+        <div class="chat-input-area">
+            <input type="text" id="user-input" placeholder="Напишите Санте...">
+            <button id="send-btn" class="send-btn">➤</button>
+        </div>
 
-    try {
-        const res = await fetch('https://santaai-melania-project.onrender.com/api/santa-chat', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message: msg })
-        });
-        const data = await res.json();
-        typingIndicator.style.display = 'none';
-        appendMessage(data.santaReply, 'santa');
-    } catch (error) {
-        typingIndicator.style.display = 'none';
-        appendMessage("Ох, олени запутались! Попробуй еще раз.", 'santa');
-    }
-}
+        <div class="footer-link-container">
+            <a href="wishlist.html" class="donation-button">Хочу стать Сантой!</a>
+        </div>
+    </div>
 
-function appendMessage(text, sender) {
-    const div = document.createElement('div');
-    div.classList.add('message', sender);
-    div.innerHTML = `<p>${text}</p>`;
-    chatBox.appendChild(div);
-    chatBox.scrollTop = chatBox.scrollHeight;
-}
-
-if (sendBtn) sendBtn.addEventListener('click', handleChat);
-if (userInput) {
-    userInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            handleChat();
-        }
-    });
-}
+    <script src="script.js"></script>
+    <script>
+        // Музыка включится после первого клика по экрану
+        document.body.addEventListener('click', () => {
+            const m = document.getElementById('bg-music');
+            if(m) m.play().catch(()=>{});
+        }, {once: true});
+    </script>
+</body>
+</html>
