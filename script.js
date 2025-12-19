@@ -1,7 +1,6 @@
 const API_URL = 'https://santaal-melania-project.onrender.com/chat';
 let currentLang = 'ru';
 
-// Функция переключения языков
 function setLanguage(lang) {
     currentLang = lang;
     const placeholders = {
@@ -11,16 +10,13 @@ function setLanguage(lang) {
         'fr': 'Écrire au Père Noël...',
         'es': 'Escribir a Papá Noel...'
     };
-    const input = document.getElementById('user-input');
-    if (input) input.placeholder = placeholders[lang] || placeholders['ru'];
+    document.getElementById('user-input').placeholder = placeholders[lang] || placeholders['ru'];
 }
 
-// Открытие уведомления
 function openWishlist() {
     alert("Санта внимательно читает твои пожелания! Напиши ему в чате прямо сейчас. 🎅🎁");
 }
 
-// Отправка сообщения
 async function sendMessage() {
     const input = document.getElementById('user-input');
     const message = input.value.trim();
@@ -35,16 +31,20 @@ async function sendMessage() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ message: message })
         });
+
         const data = await response.json();
-        addMessage(data.reply || 'Ох, олени заплутали!', 'santa');
+        if (data.reply) {
+            addMessage(data.reply, 'santa');
+        } else {
+            addMessage('Олени запутались в снегу! Попробуй еще раз чуть позже 🦌', 'santa');
+        }
     } catch (error) {
-        addMessage('Ошибка связи с Полюсом... ❄️', 'santa');
+        addMessage('Ошибка связи с Полюсом... Проверь интернет ❄️', 'santa');
     }
 }
 
 function addMessage(text, sender) {
     const chatBox = document.getElementById('chat-box');
-    if (!chatBox) return;
     const msgDiv = document.createElement('div');
     msgDiv.className = `message ${sender}-message`;
     msgDiv.innerText = text;
@@ -52,7 +52,6 @@ function addMessage(text, sender) {
     chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-// Слушатель для кнопки Enter
-document.getElementById('user-input')?.addEventListener('keypress', (e) => {
+document.getElementById('user-input').addEventListener('keypress', (e) => {
     if (e.key === 'Enter') sendMessage();
 });
