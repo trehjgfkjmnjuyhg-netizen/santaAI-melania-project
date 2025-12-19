@@ -1,11 +1,11 @@
 const RENDER_URL = "https://santaai-melania-project.onrender.com/api/santa-chat";
 
 const UI_TEXTS = {
-    'ru': { title: 'Санта Клаус', welcome: 'Хо-хо-хо! Я — Санта Клаус. Как тебя зовут?', typing: 'Санта пишет...' },
-    'en': { title: 'Santa Claus', welcome: 'Ho-ho-ho! I am Santa Claus. What is your name?', typing: 'Santa is typing...' },
-    'de': { title: 'Weihnachtsmann', welcome: 'Ich bin der Weihnachtsmann. Wie heißen Sie?', typing: 'Schreibt...' },
-    'fr': { title: 'Père Noël', welcome: 'Je suis le Père Noël. Quel est ton nom?', typing: 'Écrit...' },
-    'es': { title: 'Papá Noel', welcome: 'Soy Papá Noel. ¿Cómo te llamas?', typing: 'Escribiendo...' }
+    'ru': { welcome: 'Хо-хо-хо! Я — Санта Клаус. Как тебя зовут?', typing: 'Санта пишет...' },
+    'en': { welcome: 'Ho-ho-ho! I am Santa Claus. What is your name?', typing: 'Santa is typing...' },
+    'de': { welcome: 'Ich bin der Weihnachtsmann. Wie heißen Sie?', typing: 'Schreibt...' },
+    'fr': { welcome: 'Je suis le Père Noël. Quel est ton nom?', typing: 'Écrit...' },
+    'es': { welcome: 'Soy Papá Noel. ¿Cómo te llamas?', typing: 'Escribiendo...' }
 };
 
 let currentLang = localStorage.getItem('santaLang') || 'ru';
@@ -13,8 +13,8 @@ let currentLang = localStorage.getItem('santaLang') || 'ru';
 document.addEventListener('DOMContentLoaded', () => {
     initSnow(); 
     const chatBox = document.getElementById('chat-box');
-    const typingIndicator = document.getElementById('typing-indicator');
     const userInput = document.getElementById('user-input');
+    const typingIndicator = document.getElementById('typing-indicator');
 
     function appendMessage(text, sender) {
         const div = document.createElement('div');
@@ -46,15 +46,6 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (err) {
             typingIndicator.style.display = 'none';
             appendMessage("Ой! Олени запутались в проводах. Попробуй позже!", 'santa');
-        }
-    });
-
-    document.getElementById('language-socks').addEventListener('click', (e) => {
-        const btn = e.target.closest('.lang-sock');
-        if (btn) {
-            currentLang = btn.dataset.lang;
-            localStorage.setItem('santaLang', currentLang);
-            location.reload();
         }
     });
 
