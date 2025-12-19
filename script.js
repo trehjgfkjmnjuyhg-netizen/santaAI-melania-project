@@ -54,16 +54,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function handleChat(e) {
-        e.preventDefault();
-        const res = await fetch('https://santaai-melania-project.onrender.com/api/santa-chat', {
-        if (!msg) return;
-        appendMessage(msg, 'user');
-        userInput.value = '';
-        
-        typingIndicator.textContent = UI_TEXTS[currentLang].typing;
-        typingIndicator.style.display = 'block';
+    e.preventDefault();
+    const msg = userInput.value.trim();
+    if (!msg) return;
 
-       const res = await fetch('https://santaai-melania-project.onrender.com/api/santa-chat', {
+    appendMessage(msg, 'user');
+    userInput.value = '';
+
+    typingIndicator.textContent = UI_TEXTS[currentLang].typing;
+    typingIndicator.style.display = 'block';
+
+    try {
+        const res = await fetch('https://santaai-melania-project.onrender.com/api/santa-chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -72,6 +74,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 history: chatHistory.slice(-10)
             })
         });
+
+        const data = await res.json();
+        typingIndicator.style.display = 'none';
+        appendMessage(data.santaReply, 'santa');
+    } catch (error) {
+        typingIndicator.style.display = 'none';
+        appendMessage(UI_TEXTS[currentLang].error, 'santa', false);
+    }
+}
             const data = await res.json();
             typingIndicator.style.display = 'none';
             appendMessage(data.santaReply, 'santa');
