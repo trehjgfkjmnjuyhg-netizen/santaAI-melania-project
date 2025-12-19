@@ -1,8 +1,7 @@
-// Адрес вашего живого сервера на Render
 const API_URL = 'https://santaal-melania-project.onrender.com/chat';
 let currentLang = 'ru';
 
-// 1. Возвращаем переключение языков
+// 1. Функция переключения языков (теперь они заработают!)
 function setLanguage(lang) {
     currentLang = lang;
     const placeholders = {
@@ -17,13 +16,12 @@ function setLanguage(lang) {
     console.log('Язык переключен на:', lang);
 }
 
-// 2. Оживляем кнопку письма (Wishlist)
+// 2. Функция открытия письма
 function openWishlist() {
     alert("Санта внимательно читает твои пожелания! Напиши ему в чате прямо сейчас. 🎅🎁");
-    // Если у вас есть файл wishlist.html, можно заменить на: window.location.href = 'wishlist.html';
 }
 
-// 3. Исправленная функция отправки сообщения
+// 3. Исправленная функция отправки сообщений
 async function sendMessage() {
     const input = document.getElementById('user-input');
     const message = input.value.trim();
@@ -36,15 +34,12 @@ async function sendMessage() {
         const response = await fetch(API_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                message: message,
-                lang: currentLang 
-            })
+            body: JSON.stringify({ message: message })
         });
 
         const data = await response.json();
         
-        // Берем ответ из поля 'reply', как прописано в вашем app.py
+        // Берем поле 'reply', которое отправляет ваш сервер
         if (data.reply) {
             addMessage(data.reply, 'santa');
         } else {
@@ -56,7 +51,7 @@ async function sendMessage() {
     }
 }
 
-// 4. Функция отображения сообщений
+// 4. Функция добавления сообщений в интерфейс
 function addMessage(text, sender) {
     const chatBox = document.getElementById('chat-box');
     if (!chatBox) return;
@@ -67,7 +62,7 @@ function addMessage(text, sender) {
     chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-// Подключаем отправку через клавишу Enter
+// Позволяем отправлять через Enter
 document.getElementById('user-input')?.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') sendMessage();
 });
