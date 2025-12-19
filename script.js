@@ -1,4 +1,3 @@
-// Правильный адрес вашего сервера на Render
 const RENDER_URL = "https://santaai-melania-project.onrender.com/api/santa-chat";
 
 const UI_TEXTS = {
@@ -23,8 +22,6 @@ let chatHistory = [];
 document.addEventListener('DOMContentLoaded', () => {
     initSnow(); 
     const chatBox = document.getElementById('chat-box');
-    if (!chatBox) return;
-
     const typingIndicator = document.getElementById('typing-indicator');
     const userInput = document.getElementById('user-input');
     const wishlistLink = document.getElementById('wishlist-link-main');
@@ -57,23 +54,19 @@ document.addEventListener('DOMContentLoaded', () => {
         
         typingIndicator.textContent = UI_TEXTS[currentLang].typing;
         typingIndicator.style.display = 'block';
-        chatBox.scrollTop = chatBox.scrollHeight;
 
         try {
             const res = await fetch(RENDER_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    message: msg, 
-                    systemPrompt: SYSTEM_PROMPTS[currentLang]
-                })
+                body: JSON.stringify({ message: msg, systemPrompt: SYSTEM_PROMPTS[currentLang], history: chatHistory.slice(-6) })
             });
             const data = await res.json();
             typingIndicator.style.display = 'none';
             appendMessage(data.santaReply, 'santa');
         } catch (err) {
             typingIndicator.style.display = 'none';
-            appendMessage("Ошибка связи с Северным полюсом. Санта скоро вернется!", 'santa');
+            appendMessage("Ошибка связи с Северным полюсом. Попробуй позже!", 'santa');
         }
     }
 
@@ -111,8 +104,7 @@ function initSnow() {
         ctx.clearRect(0,0,canvas.width, canvas.height); ctx.fillStyle = "white"; ctx.beginPath();
         flakes.forEach(f => {
             ctx.moveTo(f.x, f.y); ctx.arc(f.x, f.y, f.r, 0, Math.PI*2, true);
-            f.y += Math.pow(f.d, 2) + 1;
-            if(f.y > canvas.height) { f.y = -10; f.x = Math.random()*canvas.width; }
+            f.y += 1.5; if(f.y > canvas.height) f.y = -10;
         });
         ctx.fill(); requestAnimationFrame(draw);
     }
