@@ -11,11 +11,11 @@
     <div class="chat-container">
         <div class="chat-header">
             <img src="santa_icon.jpg" class="santa-avatar">
-            <div><b id="header-title">Санта Клаус</b></div>
+            <div><b>Санта Клаус</b></div>
         </div>
 
         <div id="chat-box" class="chat-box"></div>
-        <div id="typing-indicator" class="typing-indicator"></div>
+        <div id="typing-indicator" class="typing-indicator" style="display:none">Санта пишет...</div>
 
         <div class="chat-input-area">
             <input type="text" id="user-input" placeholder="Напишите Санте...">
@@ -29,7 +29,6 @@
 
     <script src="script.js"></script>
     <script>
-        // Музыка включится после первого клика по экрану
         document.body.addEventListener('click', () => {
             const m = document.getElementById('bg-music');
             if(m) m.play().catch(()=>{});
