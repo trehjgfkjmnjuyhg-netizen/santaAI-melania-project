@@ -1,52 +1,32 @@
 const UI_TEXTS = {
     'ru': { 
-        title: 'Санта Клаус', 
-        subtitle: 'На Северном полюсе...', 
-        input_placeholder: 'Напишите Санте...', 
-        welcome: 'Хо-хо-хо! Я — Санта Клаус. Как тебя зовут?', 
-        wishlist_link: 'Хочу стать Сантой!', 
-        typing: 'Санта пишет...',
-        qr_support: 'Сканируй, чтобы поддержать Меланию и детей! ❤️',
+        title: 'Санта Клаус', subtitle: 'На Северном полюсе...', input_placeholder: 'Напишите Санте...', 
+        welcome: 'Хо-хо-хо! Я — Санта Клаус. Как тебя зовут?', wishlist_link: 'Хочу стать Сантой!', 
+        typing: 'Санта пишет...', qr_support: 'Сканируй, чтобы поддержать Меланию и детей! ❤️',
         error_santa: 'Санта кормит своих оленей, напиши ему через 30 секунд и он обязательно ответит!'
     },
     'en': { 
-        title: 'Santa Claus', 
-        subtitle: 'At the North Pole...', 
-        input_placeholder: 'Write to Santa...', 
-        welcome: 'Ho-ho-ho! I am Santa Claus. What is your name?', 
-        wishlist_link: 'I want to be Santa!', 
-        typing: 'Santa is typing...',
-        qr_support: 'Scan to support Melania and the children! ❤️',
+        title: 'Santa Claus', subtitle: 'At the North Pole...', input_placeholder: 'Write to Santa...', 
+        welcome: 'Ho-ho-ho! I am Santa Claus. What is your name?', wishlist_link: 'I want to be Santa!', 
+        typing: 'Santa is typing...', qr_support: 'Scan to support Melania and the children! ❤️',
         error_santa: 'Santa is feeding his reindeer, write to him in 30 seconds and he will definitely answer!'
     },
     'de': { 
-        title: 'Weihnachtsmann', 
-        subtitle: 'Am Nordpol...', 
-        input_placeholder: 'Schreiben...', 
-        welcome: 'Ich bin der Weihnachtsmann. Wie heißen Sie?', 
-        wishlist_link: 'Ich möchte Weihnachtsmann sein!', 
-        typing: 'Schreibt...',
-        qr_support: 'Scannen, um Melania und die Kinder zu unterstützen! ❤️',
+        title: 'Weihnachtsmann', subtitle: 'Am Nordpol...', input_placeholder: 'Schreiben...', 
+        welcome: 'Ich bin der Weihnachtsmann. Wie heißen Sie?', wishlist_link: 'Ich möchte Weihnachtsmann sein!', 
+        typing: 'Schreibt...', qr_support: 'Scannen, um Melania und die Kinder zu unterstützen! ❤️',
         error_santa: 'Der Weihnachtsmann füttert seine Rentiere, schreib ihm in 30 Sekunden и er wird bestimmt antworten!'
     },
     'fr': { 
-        title: 'Père Noël', 
-        subtitle: 'Au Pôle Nord...', 
-        input_placeholder: 'Écrire...', 
-        welcome: 'Je suis le Père Noël. Quel est ton nom?', 
-        wishlist_link: 'Devenez le Père Noël !', 
-        typing: 'Écrit...',
-        qr_support: 'Scannez pour soutenir Mélanie et les enfants ! ❤️',
+        title: 'Père Noël', subtitle: 'Au Pôle Nord...', input_placeholder: 'Écrire...', 
+        welcome: 'Je suis le Père Noël. Quel est ton nom?', wishlist_link: 'Devenez le Père Noël !', 
+        typing: 'Écrit...', qr_support: 'Scannez pour soutenir Mélanie et les enfants ! ❤️',
         error_santa: 'Le Père Noël nourrit ses rennes, écrivez-lui dans 30 secondes et il répondra certainement !'
     },
     'es': { 
-        title: 'Papá Noel', 
-        subtitle: 'En el Polo Norte...', 
-        input_placeholder: 'Escribir...', 
-        welcome: 'Soy Papá Noel. ¿Cómo te llamas?', 
-        wishlist_link: '¡Quiero ser Papá Noel!', 
-        typing: 'Escribiendo...',
-        qr_support: '¡Escanea para apoyar a Melania y a los niños! ❤️',
+        title: 'Papá Noel', subtitle: 'En el Polo Norte...', input_placeholder: 'Escribir...', 
+        welcome: 'Soy Papá Noel. ¿Cómo te llamas?', wishlist_link: '¡Quiero ser Papá Noel!', 
+        typing: 'Escribiendo...', qr_support: '¡Escanea para apoyar a Melania y a los niños! ❤️',
         error_santa: '¡Papá Noel está alimentando a sus renos, escríbele en 30 segundos y te responderá sin duda!'
     }
 };
@@ -64,17 +44,24 @@ let chatHistory = [];
 
 document.addEventListener('DOMContentLoaded', () => {
     initSnow(); 
+    
+    // Элементы чата (могут отсутствовать на странице wishlist.html)
     const chatBox = document.getElementById('chat-box');
-    if (!chatBox) return;
-
     const typingIndicator = document.getElementById('typing-indicator');
     const userInput = document.getElementById('user-input');
     const wishlistLink = document.getElementById('wishlist-link-main');
-    const qrText = document.getElementById('qr-support-text'); // Находим текст под QR
+    const chatForm = document.getElementById('chat-form');
+    
+    // Элементы QR-кода (могут быть на разных страницах с разными ID)
+    const qrTextNormal = document.getElementById('qr-support-text');
+    const qrTextWishlist = document.getElementById('qr-support-text-wishlist');
 
-    function saveHistory() { localStorage.setItem('santaChatHistory_' + currentLang, chatBox.innerHTML); }
+    function saveHistory() { 
+        if (chatBox) localStorage.setItem('santaChatHistory_' + currentLang, chatBox.innerHTML); 
+    }
 
     function loadHistory() {
+        if (!chatBox) return;
         const history = localStorage.getItem('santaChatHistory_' + currentLang);
         if (history && history.trim().length > 10) { 
             chatBox.innerHTML = history; 
@@ -86,6 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function appendMessage(text, sender) {
+        if (!chatBox) return;
         const div = document.createElement('div');
         div.classList.add(sender);
         div.innerHTML = `<p>${text.replace(/\n/g, '<br>')}</p>`;
@@ -103,8 +91,10 @@ document.addEventListener('DOMContentLoaded', () => {
         appendMessage(msg, 'user');
         userInput.value = '';
         
-        typingIndicator.textContent = UI_TEXTS[currentLang].typing;
-        typingIndicator.style.display = 'block';
+        if (typingIndicator) {
+            typingIndicator.textContent = UI_TEXTS[currentLang].typing;
+            typingIndicator.style.display = 'block';
+        }
         chatBox.scrollTop = chatBox.scrollHeight;
 
         try {
@@ -119,12 +109,11 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             const data = await res.json();
-            typingIndicator.style.display = 'none';
+            if (typingIndicator) typingIndicator.style.display = 'none';
             appendMessage(data.santaReply, 'santa');
         } catch (error) {
             console.error("Ошибка:", error);
-            typingIndicator.style.display = 'none';
-            // Используем новую фразу про оленей при ошибке
+            if (typingIndicator) typingIndicator.style.display = 'none';
             appendMessage(UI_TEXTS[currentLang].error_santa, 'santa');
         }
     }
@@ -132,27 +121,39 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateInterface(lang) {
         currentLang = lang;
         localStorage.setItem('santaLang', lang);
-        document.querySelectorAll('.lang-sock').forEach(btn => btn.classList.toggle('active', btn.dataset.lang === lang));
         
-        document.getElementById('header-title').textContent = UI_TEXTS[lang].title;
-        document.getElementById('header-subtitle').textContent = UI_TEXTS[lang].subtitle;
-        userInput.placeholder = UI_TEXTS[lang].input_placeholder;
-        wishlistLink.textContent = UI_TEXTS[lang].wishlist_link;
+        // Переключаем активный вид носочков
+        document.querySelectorAll('.lang-sock').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.lang === lang);
+        });
         
-        // Обновляем текст под QR-кодом
-        if (qrText) {
-            qrText.textContent = UI_TEXTS[lang].qr_support;
-        }
+        // Обновляем текстовые элементы, если они есть на текущей странице
+        const titleEl = document.getElementById('header-title');
+        const subtitleEl = document.getElementById('header-subtitle');
+        
+        if (titleEl) titleEl.textContent = UI_TEXTS[lang].title;
+        if (subtitleEl) subtitleEl.textContent = UI_TEXTS[lang].subtitle;
+        if (userInput) userInput.placeholder = UI_TEXTS[lang].input_placeholder;
+        if (wishlistLink) wishlistLink.textContent = UI_TEXTS[lang].wishlist_link;
+        
+        // Обновляем текст под QR (ищем на обеих страницах)
+        if (qrTextNormal) qrTextNormal.textContent = UI_TEXTS[lang].qr_support;
+        if (qrTextWishlist) qrTextWishlist.textContent = UI_TEXTS[lang].qr_support;
         
         loadHistory();
     }
 
-    document.getElementById('language-socks').addEventListener('click', (e) => {
-        const btn = e.target.closest('.lang-sock');
-        if (btn) updateInterface(btn.dataset.lang);
-    });
+    // Слушатель для переключения языков
+    const socksContainer = document.getElementById('language-socks');
+    if (socksContainer) {
+        socksContainer.addEventListener('click', (e) => {
+            const btn = e.target.closest('.lang-sock');
+            if (btn) updateInterface(btn.dataset.lang);
+        });
+    }
 
-    document.getElementById('chat-form').addEventListener('submit', handleChat);
+    if (chatForm) chatForm.addEventListener('submit', handleChat);
+    
     updateInterface(currentLang);
 });
 
