@@ -18,11 +18,11 @@ except Exception as e:
     print(f"Ошибка API: {e}")
 
 ERROR_MESSAGES = {
-    "ru": "Ох, олени запутались! (Попробуй через 30 секунд)",
-    "en": "Oh, the reindeer got tangled! (Please try again in 30 seconds)",
-    "de": "Oh, die Rentiere haben sich verfangen!",
-    "fr": "Oh, les rennes se sont emmêlés !",
-    "es": "¡Oh, los renos se han enredado!"
+    "ru": "Санта кормит своих оленей, напиши ему через 30 секунд и он обязательно ответит!",
+    "en": "Santa is feeding his reindeer, write to him in 30 seconds and he will definitely answer!",
+    "de": "Der Weihnachtsmann füttert seine Rentiere, schreib ему in 30 Sekunden и er wird bestimmt antworten!",
+    "fr": "Le Père Noël nourrit ses rennes, écrivez-lui dans 30 secondes et il répondra certainement !",
+    "es": "¡Papá Noel está alimentando a sus renos, escríbele в 30 segundos y te responderá sin duda!"
 }
 
 @app.route('/api/santa-chat', methods=['POST'])
