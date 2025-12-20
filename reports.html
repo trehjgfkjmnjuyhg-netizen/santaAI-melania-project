@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Отчеты Санты</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="chat-background">
+    <div class="reports-container" style="display: block; text-align: center;">
+        <h1 id="reports-title">Наши Добрые Дела 📸</h1>
+        <div id="no-photos-msg" style="padding: 40px; background: rgba(255,255,255,0.7); border-radius: 15px; margin: 20px 0; font-weight: bold; color: #27ae60;"></div>
+        <p id="contact-email-text" style="font-size: 1.1rem; margin-bottom: 20px; font-style: italic; color: #3e2723;"></p>
+        <div style="margin-top: 30px;">
+            <a href="index.html" class="donation-button" style="background-color: #d42426;" id="back-to-santa"></a>
+        </div>
+    </div>
+    <script src="script.js"></script>
+    <script>
+        initSnow();
+        const lang = localStorage.getItem('santaLang') || 'ru';
+        const reportText = {
+            'ru': { msg: "Мы надеемся, что тут скоро появится много фотографий счастливых детей", email: "По всем вопросам пишите на: melaniesantaslittlehelper@gmail.com", back: "← Вернуться к Санте", title: "Наши Добрые Дела 📸" },
+            'en': { msg: "We hope that many photos of happy children will appear here soon", email: "For all questions write to: melaniesantaslittlehelper@gmail.com", back: "← Return to Santa", title: "Our Good Deeds 📸" },
+            'de': { msg: "Wir hoffen, dass hier bald viele Fotos von glücklichen Kindern erscheinen werden", email: "Bei allen Fragen schreiben Sie an: melaniesantaslittlehelper@gmail.com", back: "← Zurück zum Weihnachtsmann", title: "Unsere guten Taten 📸" },
+            'fr': { msg: "Nous espérons que de nombreuses photos d'enfants heureux apparaîtront bientôt ici", email: "Pour toute question, écrivez à : melaniesantaslittlehelper@gmail.com", back: "← Retour au Père Noël", title: "Nos bonnes actions 📸" },
+            'es': { msg: "Esperamos que pronto aparezcan aquí muchas fotos de niños felices", email: "Para todas las preguntas escriba a: melaniesantaslittlehelper@gmail.com", back: "← Volver a Papá Noel", title: "Nuestras buenas acciones 📸" }
+        };
+        const content = reportText[lang] || reportText['ru'];
+        document.getElementById('no-photos-msg').textContent = content.msg;
+        document.getElementById('contact-email-text').textContent = content.email;
+        document.getElementById('back-to-santa').textContent = content.back;
+        document.getElementById('reports-title').textContent = content.title;
+    </script>
+</body>
+</html>
