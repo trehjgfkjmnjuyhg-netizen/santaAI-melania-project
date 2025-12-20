@@ -43,7 +43,7 @@ def santa_chat():
 
     try:
         response = client.models.generate_content(
-            model='gemini-1.5-flash',
+            gemini-2.0-flash-exp',
             contents=contents,
             config=types.GenerateContentConfig(system_instruction=system_prompt, temperature=0.7)
         )
