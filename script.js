@@ -1,9 +1,54 @@
 const UI_TEXTS = {
-    'ru': { title: 'Санта Клаус', subtitle: 'На Северном полюсе...', input_placeholder: 'Напишите Санте...', welcome: 'Хо-хо-хо! Я — Санта Клаус. Как тебя зовут?', wishlist_link: 'Хочу стать Сантой!', typing: 'Санта пишет...' },
-    'en': { title: 'Santa Claus', subtitle: 'At the North Pole...', input_placeholder: 'Write to Santa...', welcome: 'Ho-ho-ho! I am Santa Claus. What is your name?', wishlist_link: 'I want to be Santa!', typing: 'Santa is typing...' },
-    'de': { title: 'Weihnachtsmann', subtitle: 'Am Nordpol...', input_placeholder: 'Schreiben...', welcome: 'Ich bin der Weihnachtsmann. Wie heißen Sie?', wishlist_link: 'Ich möchte Weihnachtsmann sein!', typing: 'Schreibt...' },
-    'fr': { title: 'Père Noël', subtitle: 'Au Pôle Nord...', input_placeholder: 'Écrire...', welcome: 'Je suis le Père Noël. Quel est ton nom?', wishlist_link: 'Devenez le Père Noël !', typing: 'Écrit...' },
-    'es': { title: 'Papá Noel', subtitle: 'En el Polo Norte...', input_placeholder: 'Escribir...', welcome: 'Soy Papá Noel. ¿Cómo te llamas?', wishlist_link: '¡Quiero ser Papá Noel!', typing: 'Escribiendo...' }
+    'ru': { 
+        title: 'Санта Клаус', 
+        subtitle: 'На Северном полюсе...', 
+        input_placeholder: 'Напишите Санте...', 
+        welcome: 'Хо-хо-хо! Я — Санта Клаус. Как тебя зовут?', 
+        wishlist_link: 'Хочу стать Сантой!', 
+        typing: 'Санта пишет...',
+        qr_support: 'Сканируй, чтобы поддержать Меланию и детей! ❤️',
+        error_santa: 'Санта кормит своих оленей, напиши ему через 30 секунд и он обязательно ответит!'
+    },
+    'en': { 
+        title: 'Santa Claus', 
+        subtitle: 'At the North Pole...', 
+        input_placeholder: 'Write to Santa...', 
+        welcome: 'Ho-ho-ho! I am Santa Claus. What is your name?', 
+        wishlist_link: 'I want to be Santa!', 
+        typing: 'Santa is typing...',
+        qr_support: 'Scan to support Melania and the children! ❤️',
+        error_santa: 'Santa is feeding his reindeer, write to him in 30 seconds and he will definitely answer!'
+    },
+    'de': { 
+        title: 'Weihnachtsmann', 
+        subtitle: 'Am Nordpol...', 
+        input_placeholder: 'Schreiben...', 
+        welcome: 'Ich bin der Weihnachtsmann. Wie heißen Sie?', 
+        wishlist_link: 'Ich möchte Weihnachtsmann sein!', 
+        typing: 'Schreibt...',
+        qr_support: 'Scannen, um Melania und die Kinder zu unterstützen! ❤️',
+        error_santa: 'Der Weihnachtsmann füttert seine Rentiere, schreib ihm in 30 Sekunden и er wird bestimmt antworten!'
+    },
+    'fr': { 
+        title: 'Père Noël', 
+        subtitle: 'Au Pôle Nord...', 
+        input_placeholder: 'Écrire...', 
+        welcome: 'Je suis le Père Noël. Quel est ton nom?', 
+        wishlist_link: 'Devenez le Père Noël !', 
+        typing: 'Écrit...',
+        qr_support: 'Scannez pour soutenir Mélanie et les enfants ! ❤️',
+        error_santa: 'Le Père Noël nourrit ses rennes, écrivez-lui dans 30 secondes et il répondra certainement !'
+    },
+    'es': { 
+        title: 'Papá Noel', 
+        subtitle: 'En el Polo Norte...', 
+        input_placeholder: 'Escribir...', 
+        welcome: 'Soy Papá Noel. ¿Cómo te llamas?', 
+        wishlist_link: '¡Quiero ser Papá Noel!', 
+        typing: 'Escribiendo...',
+        qr_support: '¡Escanea para apoyar a Melania y a los niños! ❤️',
+        error_santa: '¡Papá Noel está alimentando a sus renos, escríbele en 30 segundos y te responderá sin duda!'
+    }
 };
 
 const SYSTEM_PROMPTS = {
@@ -25,6 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const typingIndicator = document.getElementById('typing-indicator');
     const userInput = document.getElementById('user-input');
     const wishlistLink = document.getElementById('wishlist-link-main');
+    const qrText = document.getElementById('qr-support-text'); // Находим текст под QR
 
     function saveHistory() { localStorage.setItem('santaChatHistory_' + currentLang, chatBox.innerHTML); }
 
@@ -62,7 +108,6 @@ document.addEventListener('DOMContentLoaded', () => {
         chatBox.scrollTop = chatBox.scrollHeight;
 
         try {
-            // ТВОЯ НОВАЯ ССЫЛКА ОТ RENDER:
             const res = await fetch('https://santa-brain.onrender.com/api/santa-chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -79,7 +124,8 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             console.error("Ошибка:", error);
             typingIndicator.style.display = 'none';
-            appendMessage("Ой! Олени запутались в проводах... Проверь интернет или попробуй чуть позже!", 'santa');
+            // Используем новую фразу про оленей при ошибке
+            appendMessage(UI_TEXTS[currentLang].error_santa, 'santa');
         }
     }
 
@@ -87,10 +133,17 @@ document.addEventListener('DOMContentLoaded', () => {
         currentLang = lang;
         localStorage.setItem('santaLang', lang);
         document.querySelectorAll('.lang-sock').forEach(btn => btn.classList.toggle('active', btn.dataset.lang === lang));
+        
         document.getElementById('header-title').textContent = UI_TEXTS[lang].title;
         document.getElementById('header-subtitle').textContent = UI_TEXTS[lang].subtitle;
         userInput.placeholder = UI_TEXTS[lang].input_placeholder;
         wishlistLink.textContent = UI_TEXTS[lang].wishlist_link;
+        
+        // Обновляем текст под QR-кодом
+        if (qrText) {
+            qrText.textContent = UI_TEXTS[lang].qr_support;
+        }
+        
         loadHistory();
     }
 
