@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Чат с Сантой</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="chat-background">
+    <audio id="bg-music" loop><source src="christmas_music.mp3" type="audio/mpeg"></audio>
+
+    <div class="chat-container">
+        <div class="chat-header">
+            <img src="santa_icon.jpg" class="santa-avatar">
+            <div>
+                <b id="header-title">Санта Клаус</b>
+                <div style="font-size:10px" id="header-subtitle">На Северном полюсе...</div>
+            </div>
+        </div>
+
+        <div id="language-socks">
+            <div class="lang-sock active" data-lang="ru"><img src="https://flagcdn.com/w20/ru.png"> RU</div>
+            <div class="lang-sock" data-lang="en"><img src="https://flagcdn.com/w20/us.png"> EN</div>
+            <div class="lang-sock" data-lang="de"><img src="https://flagcdn.com/w20/de.png"> DE</div>
+            <div class="lang-sock" data-lang="fr"><img src="https://flagcdn.com/w20/fr.png"> FR</div>
+            <div class="lang-sock" data-lang="es"><img src="https://flagcdn.com/w20/es.png"> ES</div>
+        </div>
+
+        <div id="chat-box" class="chat-box"></div>
+        <div id="typing-indicator" class="typing-indicator"></div>
+
+        <form id="chat-form" class="chat-input-area">
+            <input type="text" id="user-input" placeholder="Напишите Санте..." required>
+            <button type="submit" id="send-button">➤</button>
+        </form>
+
+        <div class="footer-link-container">
+            <a href="wishlist.html" class="donation-button" id="wishlist-link-main">Хочу стать Сантой!</a>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        const playMusic = () => {
+            const m = document.getElementById('bg-music');
+            if (m && m.paused) m.play().catch(() => {});
+        };
+        document.body.addEventListener('click', playMusic, {once: true});
+        document.body.addEventListener('touchstart', playMusic, {once: true});
+    </script>
+</body>
+</html>
