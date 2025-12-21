@@ -1,101 +1,111 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <title>Стань Сантой — Письмо Мелании</title>
-    <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <title>Стань Сантой — Письмо Мелании</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body class="chat-background">
-    <audio id="bg-music-wish" loop><source src="christmas_music.mp3" type="audio/mpeg"></audio>
-    
-    <div class="letter-wrapper" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh;">
-        
-        <button id="open-btn" class="donation-button" style="position: relative; z-index: 1000; cursor: pointer; border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.3);"></button>
+    <audio id="bg-music-wish" loop><source src="christmas_music.mp3" type="audio/mpeg"></audio>
+    
+    <div class="letter-wrapper" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 20px;">
+        
+        <button id="open-btn" class="donation-button" style="position: relative; z-index: 1000; cursor: pointer; border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.3);"></button>
 
-        <div id="paper-letter" class="paper-letter" style="display: none;">
-            <h1 id="wish-title" style="text-align:center; color:#d42426; margin-top: 0;"></h1>
-            <div id="letter-body-text" style="font-size: 1.15rem; line-height: 1.8;"></div>
-            
-            <div class="wax-seal" style="text-align: center; margin-bottom: 20px;">
-    <img src="my_qr.png" style="width: 150px; height: 150px; border-radius: 10px; display: block; margin: 0 auto;">
-    <p id="qr-support-text-wishlist" style="font-family: Arial, sans-serif; font-size: 14px; font-weight: bold; color: #a81d1d; margin-top: 15px;">
-    </p>
-            </div>
+        <div id="paper-letter" class="paper-letter" style="display: none; max-width: 600px; width: 100%;">
+            <h1 id="wish-title" style="text-align:center; color:#d42426; margin-top: 0;"></h1>
+            <div id="letter-body-text" style="font-size: 1.1rem; line-height: 1.6; margin-bottom: 20px;"></div>
+            
+            <div style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 15px; margin-bottom: 25px; padding: 15px; background: rgba(255,255,255,0.5); border-radius: 15px;">
+                
+                <img src="my_qr.png" style="width: 150px; height: 150px; border-radius: 10px; border: 3px solid #a81d1d; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
 
-            <div style="text-align:center; margin-top:20px;">
-                <button class="donation-button" style="font-size:16px;" onclick="location.href='reports.html'" id="report-btn-text"></button>
-            </div>
-            <div style="text-align:center; margin-top:20px;">
-                <a href="index.html" id="back-link-chat" style="color:#3e2723; font-weight:bold; text-decoration:none; border-bottom:1px solid #3e2723;"></a>
-            </div>
-        </div>
-    </div>
+                <div>
+                    <p id="qr-support-text-wishlist" style="font-family: Arial, sans-serif; font-size: 14px; font-weight: bold; color: #a81d1d; margin: 0 0 8px 0; line-height: 1.4;">
+                    </p>
+                    
+                    <a href="https://pump.fun/coin/FuvTS6DqkE5A9paWcQ7X5eEbVxEzKLLwXgzvgprTpump" target="_blank" style="font-family: Arial, sans-serif; font-size: 12px; color: #d42426; text-decoration: underline; word-break: break-all; font-weight: bold; display: block;">
+                        https://pump.fun/coin/FuvTS6DqkE5A9paWcQ7X5eEbVxEzKLLwXgzvgprTpump
+                    </a>
+                </div>
+            </div>
 
-    <script src="script.js"></script>
-    <script>
-        initSnow();
-        const lang = localStorage.getItem('santaLang') || 'ru';
-        
-        const translations = {
-            'ru': {
-                openBtn: "Открыть письмо от Мелании и Санты ✉️",
-                title: "Стань Сантой! 🎅",
-                text: "Я пишу тебе, потому что хочу стать частью твоего волшебства. На свете есть дети из детских домов, у которых нет родителей. Мы вместе подарим им самое главное — чувство, что они не одиноки.<br><br>Помоги Санте порадовать как можно больше детей, приобрети коин <b>Santa Claus AI (SCAI)</b>. Наша цель — усилить веру детей в добро и чудеса, подарить каждому такому ребенку <b>игрушку-робота с ИИ</b>. У детей появится настоящий ИИ-дружок, который будет рядом!<br><br>Я верю в прозрачность и технологии. Пусть монета <b>SCAI</b> в твоем кошельке напоминает о сделанном добре. Пусть вера детей в Рождество растет вместе с нашим балансом! Не покупайте эту монету с целью спекуляции. Купите эти монеты, отправьте родным, близким, друзьям — пусть у Санты будет много помощников!<br><br>Этот проект создан <b>Меланией</b> (8 лет) и её папой с целью обучения и желанием сделать этот мир лучше!",
-                back: "← Вернуться к Санте",
-                report: "Наши добрые дела",
-                qrSupport: "Сканируй, чтобы поддержать Меланию и детей! ❤️"
-            },
-            'en': {
-                openBtn: "Open letter from Melania and Santa ✉️",
-                title: "Become Santa! 🎅",
-                text: "I am writing to you because I want to be part of your magic. There are children in orphanages who have no parents. Together we will give them the most important thing — the feeling that they are not alone.<br><br>Help Santa cheer up as many children as possible, purchase the <b>Santa Claus AI (SCAI)</b> coin. Our goal is to strengthen children's faith in goodness and miracles, to give each such child an <b>AI robot toy</b>. The children will have a real AI friend who will be there!<br><br>I believe in transparency and technology. Let the <b>SCAI</b> coin in your wallet remind you of the good deed done. Let the children's faith in Christmas grow along with our balance! Do not buy this coin for speculation. Buy these coins, send them to relatives, loved ones, friends — let Santa have many helpers!<br><br>This project was created by <b>Melania</b> (8 years old) and her dad for learning purposes and the desire to make this world a better place!",
-                back: "← Return to Santa",
-                report: "Our good deeds",
-                qrSupport: "Scan to support Melania and the children! ❤️"
-            },
-            'fr': {
-                openBtn: "Ouvrir la lettre de Mélanie et du Père Noël ✉️",
-                title: "Devenez le Père Noël ! 🎅",
-                text: "Je t'écris parce que je veux faire partie de ta magie. Il y a des enfants dans des orphelinats qui n'ont pas de parents. Ensemble, nous leur donnerons l'essentiel : le sentiment qu'ils ne sont pas seuls.<br><br>Aide le Père Noël à réjouir le plus d'enfants possible, achète le coin <b>Santa Claus AI (SCAI)</b>. Notre objectif est de renforcer la foi des enfants dans la bonté et les miracles, d'offrir à chacun de ces enfants un <b>jouet robot avec IA</b>. Les enfants auront un véritable ami IA qui sera à leurs côtés !<br><br>Je crois en la transparence et en la technologie. Que la pièce <b>SCAI</b> dans ton portefeuille te rappelle le bien accompli. Que la foi des enfants en Noël grandisse avec notre projet ! N'achète pas cette pièce pour la spéculation. Achète ces pièces, envoie-les à ta famille, à tes proches, à tes amis — que le Père Noël ait beaucoup d'assistants !<br><br>Ce projet a été créé par <b>Mélanie</b> (8 ans) et son papa dans un but éducatif et avec le désir de rendre ce monde meilleur !",
-                back: "← Retour au Père Noël",
-                report: "Nos bonnes actions",
-                qrSupport: "Scannez pour soutenir Mélanie et les enfants ! ❤️"
-            },
-            'de': {
-                openBtn: "Brief von Melania und dem Weihnachtsmann öffnen ✉️",
-                title: "Werde Weihnachtsmann! 🎅",
-                text: "Ich schreibe dir, weil ich Teil deines Zaubers sein möchte. Es gibt Kinder in Waisenhäusern, die keine Eltern haben. Gemeinsam werden wir ihnen das Wichtigste schenken – das Gefühl, dass sie nicht allein sind.<br><br>Hilf dem Weihnachtsmann, so viele Kinder wie möglich zu erfreuen, kaufe den <b>Santa Claus AI (SCAI)</b> Coin. Unser Ziel ist es, den Glauben der Kinder an das Gute und an Wunder zu stärken und jedem dieser Kinder ein <b>KI-Roboterspielzeug</b> zu schenken. Die Kinder werden einen echten KI-Freund haben!<br><br>Ich glaube an Transparenz und Technologie. Lass den <b>SCAI-Coin</b> in deiner Wallet dich an die gute Tat erinnern. Lass den Glauben der Kinder an Weihnachten zusammen mit unserem Projekt wachsen! Kaufen Sie diesen Coin nicht zum Zweck der Spekulation. Kaufen Sie diese Coins für Ihre Familie und Freunde – damit der Weihnachtsmann viele Helfer hat!<br><br>Dieses Projekt wurde von <b>Melania</b> (8 Jahre) und ihrem Papa zu Lernzwecken und mit dem Wunsch ins Leben gerufen, die Welt ein Stück besser zu machen!",
-                back: "← Zurück zum Weihnachtsmann",
-                report: "Unsere guten Taten",
-                qrSupport: "Scannen, um Melania und die Kinder zu unterstützen! ❤️"
-            },
-            'es': {
-                openBtn: "Abrir carta de Melania y Papá Noel ✉️",
-                title: "¡Conviértete en Papá Noel! 🎅",
-                text: "Te escribo porque quiero ser parte de tu magia. Hay niños en orfanatos que no tienen padres. Juntos les daremos lo más importante: el sentimiento de que no están solos.<br><br>Ayuda a Papá Noel a alegrar a tantos niños como sea posible, adquiere la moneda <b>Santa Claus AI (SCAI)</b>. Nuestro objetivo es fortalecer la fe de los niños en la bondad y los milagros, regalando a cada uno de estos niños un <b>robot de juguete con IA</b>. ¡Los niños tendrán un verdadero amigo de IA a su lado!<br><br>Creo en la transparencia y la tecnología. Que la moneda <b>SCAI</b> en tu billetera te recuerde la buena acción realizada. ¡Que la fe de los niños en la Navidad crezca junto con nuestro proyecto! No compres esta moneda con fines de especulación. Compra estas monedas, envíalas a tus familiares y amigos: ¡que Papá Noel tenga muchos ayudantes!<br><br>¡Este proyecto fue creado por <b>Melania</b> (8 años) y su papá con fines educativos y el deseo de hacer de este mundo un lugar mejor!",
-                back: "← Volver a Papá Noel",
-                report: "Nuestras buenas acciones",
-                qrSupport: "¡Escanea para apoyar a Melania y a los niños! ❤️"
-            }
-        };
+            <div style="text-align:center; margin-top:20px;">
+                <button class="donation-button" style="font-size:16px;" onclick="location.href='reports.html'" id="report-btn-text"></button>
+            </div>
+            <div style="text-align:center; margin-top:20px;">
+                <a href="index.html" id="back-link-chat" style="color:#3e2723; font-weight:bold; text-decoration:none; border-bottom:1px solid #3e2723;"></a>
+            </div>
+        </div>
+    </div>
 
-        const content = translations[lang] || translations['ru'];
-        
-        const openBtn = document.getElementById('open-btn');
-        openBtn.textContent = content.openBtn;
-        
-        document.getElementById('wish-title').innerHTML = content.title;
-        document.getElementById('letter-body-text').innerHTML = content.text;
-        document.getElementById('report-btn-text').textContent = content.report;
-        document.getElementById('back-link-chat').textContent = content.back;
-        document.getElementById('qr-support-text-wishlist').textContent = content.qrSupport;
+    <script src="script.js"></script>
+    <script>
+        if (typeof initSnow === 'function') initSnow();
+        const lang = localStorage.getItem('santaLang') || 'ru';
+        
+        const translations = {
+            'ru': {
+                openBtn: "Открыть письмо от Мелании и Санты ✉️",
+                title: "Стань Сантой! 🎅",
+                text: "Я пишу тебе, потому что хочу стать частью твоего волшебства. На свете есть дети из детских домов, у которых нет родителей. Мы вместе подарим им самое главное — чувство, что они не одиноки.<br><br>Помоги Санте порадовать как можно больше детей, приобрети коин <b>Santa Claus AI (SCAI)</b>. Наша цель — усилить веру детей в добро и чудеса, подарить каждому такому ребенку <b>игрушку-робота с ИИ</b>. У детей появится настоящий ИИ-дружок, который будет рядом!<br><br>Я верю в прозрачность и технологии. Пусть монета <b>SCAI</b> в твоем кошельке напоминает о сделанном добре. Пусть вера детей в Рождество растет вместе с нашим балансом! Не покупайте эту монету с целью спекуляции. Купите эти монеты, отправьте родным, близким, друзьям — пусть у Санты будет много помощников!<br><br>Этот проект создан <b>Меланией</b> (8 лет) и её папой с целью обучения и желанием сделать этот мир лучше!",
+                back: "← Вернуться к Санте",
+                report: "Наши добрые дела",
+                qrSupport: "Сканируй или переходи по ссылке, чтобы поддержать Меланию и детей! ❤️"
+            },
+            'en': {
+                openBtn: "Open letter from Melania and Santa ✉️",
+                title: "Become Santa! 🎅",
+                text: "I am writing to you because I want to be part of your magic. There are children in orphanages who have no parents. Together we will give them the most important thing — the feeling that they are not alone.<br><br>Help Santa cheer up as many children as possible, purchase the <b>Santa Claus AI (SCAI)</b> coin. Our goal is to strengthen children's faith in goodness and miracles, to give each such child an <b>AI robot toy</b>. The children will have a real AI friend who will be there!<br><br>I believe in transparency and technology. Let the <b>SCAI</b> coin in your wallet remind you of the good deed done. Let the children's faith in Christmas grow along with our balance! Do not buy this coin for speculation. Buy these coins, send them to relatives, loved ones, friends — let Santa have many helpers!<br><br>This project was created by <b>Melania</b> (8 years old) and her dad for learning purposes and the desire to make this world a better place!",
+                back: "← Return to Santa",
+                report: "Our good deeds",
+                qrSupport: "Scan or follow the link to support Melania and the children! ❤️"
+            },
+            'fr': {
+                openBtn: "Ouvrir la lettre de Mélanie et du Père Noël ✉️",
+                title: "Devenez le Père Noël ! 🎅",
+                text: "Je t'écris parce que je veux faire partie de ta magie. Il y a des enfants dans des orphelinats qui n'ont pas de parents. Ensemble, nous leur donnerons l'essentiel : le sentiment qu'ils ne sont pas seuls.<br><br>Aide le Père Noël à réjouir le plus d'enfants possible, achète le coin <b>Santa Claus AI (SCAI)</b>. Notre objectif est de renforcer la foi des enfants dans la bonté et les miracles, d'offrir à chacun de ces enfants un <b>jouet robot avec IA</b>. Les enfants auront un véritable ami IA qui sera à leurs côtés !<br><br>Je crois en la transparence et en la technologie. Que la pièce <b>SCAI</b> dans ton portefeuille te rappelle le bien accompli. Que la foi des enfants en Noël grandisse avec notre projet ! N'achète pas cette pièce pour la spéculation. Achète ces pièces, envoie-les à ta famille, à tes proches, à tes amis — que le Père Noël ait beaucoup d'assistants !<br><br>Ce projet a été créé par <b>Mélanie</b> (8 ans) et son papa dans un but éducatif et avec le désir de rendre ce monde meilleur !",
+                back: "← Retour au Père Noël",
+                report: "Nos bonnes actions",
+                qrSupport: "Scannez ou suivez le lien pour soutenir Mélanie et les enfants ! ❤️"
+            },
+            'de': {
+                openBtn: "Brief von Melania und dem Weihnachtsmann öffnen ✉️",
+                title: "Werde Weihnachtsmann! 🎅",
+                text: "Ich schreibe dir, weil ich Teil deines Zaubers sein möchte. Es gibt Kinder in Waisenhäusern, die keine Eltern haben. Gemeinsam werden wir ihnen das Wichtigste schenken – das Gefühl, dass sie nicht allein sind.<br><br>Hilf dem Weihnachtsmann, so viele Kinder wie möglich zu erfreuen, kaufe den <b>Santa Claus AI (SCAI)</b> Coin. Unser Ziel ist es, den Glauben der Kinder an das Gute und an Wunder zu stärken und jedem dieser Kinder ein <b>KI-Roboterspielzeug</b> zu schenken. Die Kinder werden einen echten KI-Freund haben!<br><br>Ich glaube an Transparenz und Technologie. Lass den <b>SCAI-Coin</b> in deiner Wallet dich an die gute Tat erinnern. Lass den Glauben der Kinder an Weihnachten zusammen mit unserem Projekt wachsen! Kaufen Sie diesen Coin nicht zum Zweck der Spekulation. Kaufen Sie diese Coins für Ihre Familie und Freunde – damit der Weihnachtsmann viele Helfer hat!<br><br>Dieses Projekt wurde von <b>Melania</b> (8 Jahre) und ihrem Papa zu Lernzwecken und mit dem Wunsch ins Leben gerufen, die Welt ein Stück besser zu machen!",
+                back: "← Zurück zum Weihnachtsmann",
+                report: "Unsere guten Taten",
+                qrSupport: "Scannen oder folgen Sie dem Link, um Melania und die Kinder zu unterstützen! ❤️"
+            },
+            'es': {
+                openBtn: "Abrir carta de Melania y Papá Noel ✉️",
+                title: "¡Conviértete en Papá Noel! 🎅",
+                text: "Te escribo porque quiero ser parte de tu magia. Hay niños en orfanatos que no tienen padres. Juntos les daremos lo más importante: el sentimiento de que no están solos.<br><br>Ayuda a Papá Noel a alegrar a tantos niños como sea posible, adquiere la moneda <b>Santa Claus AI (SCAI)</b>. Nuestro objetivo es fortalecer la fe de los niños en la bondad и la milagros, regalando a cada uno de estos niños un <b>robot de juguete con IA</b>. ¡Los niños tendrán un verdadero amigo de IA a su lado!<br><br>Creo en la transparencia и la tecnología. Que la moneda <b>SCAI</b> en tu billetera te recuerde la buena acción realizada. ¡Que la fe de los niños en la Navidad crezca junto con nuestro proyecto! No compres esta moneda con fines de especulación. Compra estas monedas, envíalas a tus familiares и amigos: ¡que Papá Noel tenga muchos ayudantes!<br><br>¡Este proyecto fue creado por <b>Melania</b> (8 años) и su papá con fines educativos и el deseo de hacer de este mundo un lugar mejor!",
+                back: "← Volver a Papá Noel",
+                report: "Nuestras buenas acciones",
+                qrSupport: "¡Escanea o sigue el enlace para apoyar a Melania y a los niños! ❤️"
+            }
+        };
 
-        openBtn.addEventListener('click', function() {
-            this.style.display = 'none';
-            document.getElementById('paper-letter').style.display = 'block';
-            const music = document.getElementById('bg-music-wish');
-            if (music) music.play().catch(e => console.log("Music play blocked"));
-        });
-    </script>
+        const content = translations[lang] || translations['ru'];
+        
+        const openBtn = document.getElementById('open-btn');
+        if (openBtn) {
+            openBtn.textContent = content.openBtn;
+            openBtn.addEventListener('click', function() {
+                this.style.display = 'none';
+                const paper = document.getElementById('paper-letter');
+                if (paper) paper.style.display = 'block';
+                const music = document.getElementById('bg-music-wish');
+                if (music) music.play().catch(e => console.log("Music play blocked"));
+            });
+        }
+        
+        if (document.getElementById('wish-title')) document.getElementById('wish-title').innerHTML = content.title;
+        if (document.getElementById('letter-body-text')) document.getElementById('letter-body-text').innerHTML = content.text;
+        if (document.getElementById('report-btn-text')) document.getElementById('report-btn-text').textContent = content.report;
+        if (document.getElementById('back-link-chat')) document.getElementById('back-link-chat').textContent = content.back;
+        if (document.getElementById('qr-support-text-wishlist')) document.getElementById('qr-support-text-wishlist').textContent = content.qrSupport;
+    </script>
 </body>
 </html>
