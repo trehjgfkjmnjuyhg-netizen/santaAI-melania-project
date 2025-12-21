@@ -19,11 +19,11 @@
         initSnow();
         const lang = localStorage.getItem('santaLang') || 'ru';
         const reportText = {
-            'ru': { msg: "Мы надеемся, что тут скоро появится много фотографий счастливых детей", email: "По всем вопросам пишите на: melaniesantaslittlehelper@gmail.com", back: "← Вернуться к Санте", title: "Наши Добрые Дела 📸" },
-            'en': { msg: "We hope that many photos of happy children will appear here soon", email: "For all questions write to: melaniesantaslittlehelper@gmail.com", back: "← Return to Santa", title: "Our Good Deeds 📸" },
-            'de': { msg: "Wir hoffen, dass hier bald viele Fotos von glücklichen Kindern erscheinen werden", email: "Bei allen Fragen schreiben Sie an: melaniesantaslittlehelper@gmail.com", back: "← Zurück zum Weihnachtsmann", title: "Unsere guten Taten 📸" },
-            'fr': { msg: "Nous espérons que de nombreuses photos d'enfants heureux apparaîtront bientôt ici", email: "Pour toute question, écrivez à : melaniesantaslittlehelper@gmail.com", back: "← Retour au Père Noël", title: "Nos bonnes actions 📸" },
-            'es': { msg: "Esperamos que pronto aparezcan aquí muchas fotos de niños felices", email: "Para todas las preguntas escriba a: melaniesantaslittlehelper@gmail.com", back: "← Volver a Papá Noel", title: "Nuestras buenas acciones 📸" }
+            'ru': { msg: "Мы надеемся, что тут скоро появится много фотографий счастливых детей", email: "По всем вопросам пишите на: https://x.com/SCAIProject", back: "← Вернуться к Санте", title: "Наши Добрые Дела 📸" },
+            'en': { msg: "We hope that many photos of happy children will appear here soon", email: "For all questions write to: https://x.com/SCAIProject", back: "← Return to Santa", title: "Our Good Deeds 📸" },
+            'de': { msg: "Wir hoffen, dass hier bald viele Fotos von glücklichen Kindern erscheinen werden", email: "Bei allen Fragen schreiben Sie an: https://x.com/SCAIProject", back: "← Zurück zum Weihnachtsmann", title: "Unsere guten Taten 📸" },
+            'fr': { msg: "Nous espérons que de nombreuses photos d'enfants heureux apparaîtront bientôt ici", email: "Pour toute question, écrivez à : https://x.com/SCAIProject", back: "← Retour au Père Noël", title: "Nos bonnes actions 📸" },
+            'es': { msg: "Esperamos que pronto aparezcan aquí muchas fotos de niños felices", email: "Para todas las preguntas escriba a: https://x.com/SCAIProject", back: "← Volver a Papá Noel", title: "Nuestras buenas acciones 📸" }
         };
         const content = reportText[lang] || reportText['ru'];
         document.getElementById('no-photos-msg').textContent = content.msg;
