@@ -72,15 +72,64 @@ document.addEventListener('DOMContentLoaded', () => {
         chatBox.scrollTop = chatBox.scrollHeight;
     }
 
-    function appendMessage(text, sender) {
-        if (!chatBox) return;
-        const div = document.createElement('div');
-        div.classList.add(sender);
-        div.innerHTML = `<p>${text.replace(/\n/g, '<br>')}</p>`;
-        chatBox.appendChild(div);
-        chatBox.scrollTop = chatBox.scrollHeight;
-        chatHistory.push({role: sender === 'santa' ? 'assistant' : 'user', content: text});
+    // Новая функция: умеет показывать и текст, и видео
+function appendMessage(content, sender, isVideo = false) {
+    const chatBox = document.getElementById('chat-box');
+    if (!chatBox) return;
+
+    const div = document.createElement('div');
+    div.classList.add('message', sender);
+
+    if (isVideo) {
+        div.innerHTML = `
+            <div class="video-container" style="margin: 10px 0;">
+                <video width="100%" controls autoplay style="border-radius: 15px; border: 3px solid #d42426; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
+                    <source src="${content}" type="video/mp4">
+                    Ваш браузер не поддерживает видео.
+                </video>
+            </div>`;
+    } else {
+        div.innerHTML = `<p>${content.replace(/\n/g, '<br>')}</p>`;
+    }
+
+    chatBox.appendChild(div);
+    chatBox.scrollTop = chatBox.scrollHeight;
+
+    if (!isVideo) {
+        chatHistory.push({ role: sender === 'santa' ? 'assistant' : 'user', content: content });
         saveHistory();
+    }
+}
+
+// Новая функция: добавляет видео-приветствие при загрузке
+function loadHistory() {
+    const chatBox = document.getElementById('chat-box');
+    if (!chatBox) return;
+
+    const history = localStorage.getItem('santaChatHistory_' + currentLang);
+    
+    if (history && history.trim().length > 10) {
+        chatBox.innerHTML = history;
+    } else {
+        chatBox.innerHTML = '';
+        const welcomeVideos = {
+            'ru': "http://googleusercontent.com/generated_video_content/2879041984064999763",
+            'en': "http://googleusercontent.com/generated_video_content/10944891794765588936",
+            'fr': "http://googleusercontent.com/generated_video_content/3477560230210803062",
+            'de': "http://googleusercontent.com/generated_video_content/10944891794765588936",
+            'es': "http://googleusercontent.com/generated_video_content/10944891794765588936"
+        };
+        const videoUrl = welcomeVideos[currentLang] || welcomeVideos['en'];
+        appendMessage(videoUrl, 'santa', true);
+        
+        setTimeout(() => {
+            // Берем текст приветствия из твоего объекта переводов
+            const welcomeText = (window.translations && window.translations[currentLang]?.welcome) || "Ho-ho-ho!";
+            appendMessage(welcomeText, 'santa');
+        }, 1000);
+    }
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
     }
 
     async function handleChat(e) {
