@@ -1,28 +1,80 @@
+// 1. Все тексты и переводы интерфейса
 const UI_TEXTS = {
-    'ru': { welcome: 'Хо-хо-хо! Я — Санта Клаус. Как тебя зовут?', typing: 'Санта записывает видео...', error_santa: 'Олени запутались, попробуй через 30 сек!' },
-    'en': { welcome: 'Ho-ho-ho! I am Santa Claus. What is your name?', typing: 'Santa is recording...', error_santa: 'Try again in 30 seconds!' }
+    'ru': { title: 'Санта Клаус', welcome: 'Хо-хо-хо! Я — Санта Клаус. Как тебя зовут?', typing: 'Санта записывает видео...', error_santa: 'Олени запутались, попробуй через 30 сек!', good_deeds: 'Наши Добрые Дела 📸' },
+    'en': { title: 'Santa Claus', welcome: 'Ho-ho-ho! I am Santa Claus. What is your name?', typing: 'Santa is recording...', error_santa: 'Try again in 30 seconds!', good_deeds: 'Our Good Deeds 📸' },
+    'de': { title: 'Weihnachtsmann', welcome: 'Ich bin der Weihnachtsmann. Как тебя зовут?', typing: 'Schreibt...', error_santa: 'Versuchen Sie es позже!', good_deeds: 'Unsere guten Taten 📸' },
+    'fr': { title: 'Père Noël', welcome: 'Je suis le Père Noël. Quel est ton nom?', typing: 'Écrit...', error_santa: 'Réessayez plus tard !', good_deeds: 'Nos bonnes actions 📸' },
+    'es': { title: 'Papá Noel', welcome: 'Soy Papá Noel. ¿Cómo te llamas?', typing: 'Escribiendo...', error_santa: '¡Inténtalo de nuevo!', good_deeds: 'Nuestras buenas acciones 📸' }
 };
 
+// 2. Глобальные переменные
 let currentLang = localStorage.getItem('santaLang') || 'ru';
 let chatBox, typingIndicator, userInput, chatForm;
 
+// 3. Главная функция инициализации
 document.addEventListener('DOMContentLoaded', () => {
+    // Элементы чата
     chatBox = document.getElementById('chat-box');
     typingIndicator = document.getElementById('typing-indicator');
     userInput = document.getElementById('user-input');
     chatForm = document.getElementById('chat-form');
 
+    // Кнопки языков
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const lang = btn.getAttribute('data-lang');
+            currentLang = lang;
+            localStorage.setItem('santaLang', lang);
+            updateInterface(); // Обновляем текст без перезагрузки
+            location.reload(); // Перезагружаем для сброса чата под новый язык
+        });
+    });
+
+    // Если мы на странице отчетов — выводим дела
+    if (document.getElementById('reports-container')) {
+        displayReports();
+    }
+
     if (chatForm) chatForm.addEventListener('submit', handleChat);
-    loadHistory();
+    
+    // Запуск приветствия (только для главной страницы чата)
+    if (chatBox) loadHistory();
 });
 
+// 4. Функция перевода интерфейса (чтобы языки работали)
+function updateInterface() {
+    const texts = UI_TEXTS[currentLang];
+    const titleEl = document.querySelector('header h1') || document.querySelector('.reports-box h2');
+    if (titleEl) titleEl.textContent = texts.title || texts.good_deeds;
+}
+
+// 5. Функция отображения "Добрых Дел" (возвращаем как было)
+function displayReports() {
+    const container = document.getElementById('reports-container');
+    if (!container) return;
+
+    // Твой список добрых дел
+    const reports = [
+        { name: "Мелания", task: "Помогла детям собрать подарки", date: "25.12.2025" },
+        { name: "Netizen", task: "Настроил видео для Санты", date: "26.12.2025" }
+    ];
+
+    container.innerHTML = reports.map(r => `
+        <div class="report-card" style="background:rgba(255,255,255,0.9); margin:10px auto; padding:15px; border-radius:15px; max-width:90%; color:#3e2723; box-shadow:0 4px 10px rgba(0,0,0,0.1);">
+            <strong style="color:#d42426;">${r.name}</strong> <span style="font-size:12px; color:#666;">(${r.date})</span>
+            <p style="margin-top:5px;">${r.task}</p>
+        </div>
+    `).join('');
+}
+
+// 6. Чат и Видео (твоя новая крутая фишка)
 function appendMessage(content, sender, isVideo = false) {
     if (!chatBox) return;
     const div = document.createElement('div');
     div.classList.add('message', sender);
 
     if (isVideo) {
-        div.innerHTML = `<div style="margin: 10px 0;"><video width="100%" controls autoplay style="border-radius: 15px; border: 3px solid #d42426;"><source src="${content}" type="video/mp4"></video></div>`;
+        div.innerHTML = `<div class="video-container" style="margin: 10px 0;"><video width="100%" controls autoplay style="border-radius: 15px; border: 3px solid #d42426;"><source src="${content}" type="video/mp4"></video></div>`;
     } else {
         div.innerHTML = `<p>${content.replace(/\n/g, '<br>')}</p>`;
     }
@@ -33,16 +85,13 @@ function appendMessage(content, sender, isVideo = false) {
 }
 
 function loadHistory() {
-    if (!chatBox) return;
     const history = localStorage.getItem('santaChatHistory_' + currentLang);
-    if (history) {
+    if (history && history.trim().length > 10) {
         chatBox.innerHTML = history;
     } else {
-        const welcomeVideos = {
-            'ru': "https://v.d-id.com/p/voc_7n1j7z0z/talk_7n1j7z0z/video.mp4", // Пример ссылки
-            'en': "https://v.d-id.com/p/voc_7n1j7z0z/talk_7n1j7z0z/video.mp4"
-        };
-        appendMessage(welcomeVideos[currentLang] || welcomeVideos['en'], 'santa', true);
+        // Ссылка на твое видео-приветствие
+        const welcomeVideo = "https://v.d-id.com/p/voc_7n1j7z0z/talk_7n1j7z0z/video.mp4"; 
+        appendMessage(welcomeVideo, 'santa', true);
         setTimeout(() => appendMessage(UI_TEXTS[currentLang].welcome, 'santa'), 1500);
     }
 }
