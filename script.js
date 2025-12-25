@@ -1,180 +1,90 @@
 const UI_TEXTS = {
-    'ru': { 
-        title: 'Санта Клаус', subtitle: 'На Северном полюсе...', input_placeholder: 'Напишите Санте...', 
-        welcome: 'Хо-хо-хо! Я — Санта Клаус. Как тебя зовут?', wishlist_link: 'Хочу стать Сантой!', 
-        typing: 'Санта пишет...', qr_support: 'Сканируй, чтобы поддержать Меланию и детей! ❤️',
-        error_santa: 'Санта кормит своих оленей, напиши ему через 30 секунд и он обязательно ответит!'
-    },
-    'en': { 
-        title: 'Santa Claus', subtitle: 'At the North Pole...', input_placeholder: 'Write to Santa...', 
-        welcome: 'Ho-ho-ho! I am Santa Claus. What is your name?', wishlist_link: 'I want to be Santa!', 
-        typing: 'Santa is typing...', qr_support: 'Scan to support Melania and the children! ❤️',
-        error_santa: 'Santa is feeding his reindeer, write to him in 30 seconds and he will definitely answer!'
-    },
-    'de': { 
-        title: 'Weihnachtsmann', subtitle: 'Am Nordpol...', input_placeholder: 'Schreiben...', 
-        welcome: 'Ich bin der Weihnachtsmann. Wie heißen Sie?', wishlist_link: 'Ich möchte Weihnachtsmann sein!', 
-        typing: 'Schreibt...', qr_support: 'Scannen, um Melania und die Kinder zu unterstützen! ❤️',
-        error_santa: 'Der Weihnachtsmann füttert seine Rentiere, schreib ihm in 30 Sekunden и er wird bestimmt antworten!'
-    },
-    'fr': { 
-        title: 'Père Noël', subtitle: 'Au Pôle Nord...', input_placeholder: 'Écrire...', 
-        welcome: 'Je suis le Père Noël. Quel est ton nom?', wishlist_link: 'Devenez le Père Noël !', 
-        typing: 'Écrit...', qr_support: 'Scannez pour soutenir Mélanie et les enfants ! ❤️',
-        error_santa: 'Le Père Noël nourrit ses rennes, écrivez-lui dans 30 secondes et il répondra certainement !'
-    },
-    'es': { 
-        title: 'Papá Noel', subtitle: 'En el Polo Norte...', input_placeholder: 'Escribir...', 
-        welcome: 'Soy Papá Noel. ¿Cómo te llamas?', wishlist_link: '¡Quiero ser Papá Noel!', 
-        typing: 'Escribiendo...', qr_support: '¡Escanea para apoyar a Melania y a los niños! ❤️',
-        error_santa: '¡Papá Noel está alimentando a sus renos, escríbele en 30 segundos y te responderá sin duda!'
-    }
-};
-
-const SYSTEM_PROMPTS = {
-    'ru': "Я — Санта Клаус, дружелюбный и мудрый. Моя цель — вдохновлять на добрые дела.",
-    'en': "I am Santa Claus, friendly and wise. My goal is to inspire good deeds.",
-    'de': "Ich bin der Weihnachtsmann. Mein Ziel ist es, zu guten Taten zu inspirieren.",
-    'fr': "Je suis le Père Noël. Mon but est d'inspirer les bonnes actions.",
-    'es': "Soy Papá Noel. Mi objetivo es inspirar buenas acciones."
+    'ru': { welcome: 'Хо-хо-хо! Я — Санта Клаус. Как тебя зовут?', typing: 'Санта записывает видео...', error_santa: 'Олени запутались, попробуй через 30 сек!' },
+    'en': { welcome: 'Ho-ho-ho! I am Santa Claus. What is your name?', typing: 'Santa is recording...', error_santa: 'Try again in 30 seconds!' },
+    'de': { welcome: 'Ich bin der Weihnachtsmann. Wie heißen Sie?', typing: 'Schreibt...', error_santa: 'Versuchen Sie es später!' },
+    'fr': { welcome: 'Je suis le Père Noël. Quel est ton nom?', typing: 'Écrit...', error_santa: 'Réessayez plus tard !' },
+    'es': { welcome: 'Soy Papá Noel. ¿Cómo te llamas?', typing: 'Escribiendo...', error_santa: '¡Inténtalo de nuevo!' }
 };
 
 let currentLang = localStorage.getItem('santaLang') || 'ru';
-let chatHistory = [];
+let chatBox, typingIndicator, userInput, chatForm;
 
 document.addEventListener('DOMContentLoaded', () => {
-    initSnow(); 
-    
-    // Элементы чата (могут отсутствовать на странице wishlist.html)
-    const chatBox = document.getElementById('chat-box');
-    const typingIndicator = document.getElementById('typing-indicator');
-    const userInput = document.getElementById('user-input');
-    const wishlistLink = document.getElementById('wishlist-link-main');
-    const chatForm = document.getElementById('chat-form');
-    
-    // Элементы QR-кода (могут быть на разных страницах с разными ID)
-    const qrTextNormal = document.getElementById('qr-support-text');
-    const qrTextWishlist = document.getElementById('qr-support-text-wishlist');
-
-    function saveHistory() { 
-        if (chatBox) localStorage.setItem('santaChatHistory_' + currentLang, chatBox.innerHTML); 
-    }
-
-    function loadHistory() {
-        if (!chatBox) return;
-        const history = localStorage.getItem('santaChatHistory_' + currentLang);
-        if (history && history.trim().length > 10) { 
-            chatBox.innerHTML = history; 
-        } else { 
-            chatBox.innerHTML = ''; 
-            appendMessage(UI_TEXTS[currentLang].welcome, 'santa'); 
-        }
-        chatBox.scrollTop = chatBox.scrollHeight;
-    }
-
-    function appendMessage(text, sender) {
-        if (!chatBox) return;
-        const div = document.createElement('div');
-        div.classList.add(sender);
-        div.innerHTML = `<p>${text.replace(/\n/g, '<br>')}</p>`;
-        chatBox.appendChild(div);
-        chatBox.scrollTop = chatBox.scrollHeight;
-        chatHistory.push({role: sender === 'santa' ? 'assistant' : 'user', content: text});
-        saveHistory();
-    }
-
-    async function handleChat(e) {
-        e.preventDefault();
-        const msg = userInput.value.trim();
-        if (!msg) return;
-
-        appendMessage(msg, 'user');
-        userInput.value = '';
-        
-        if (typingIndicator) {
-            typingIndicator.textContent = UI_TEXTS[currentLang].typing;
-            typingIndicator.style.display = 'block';
-        }
-        chatBox.scrollTop = chatBox.scrollHeight;
-
-        try {
-            const res = await fetch('https://santa-brain.onrender.com/api/santa-chat', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    message: msg, 
-                    systemPrompt: SYSTEM_PROMPTS[currentLang], 
-                    history: chatHistory.slice(-6) 
-                })
-            });
-
-            const data = await res.json();
-            if (typingIndicator) typingIndicator.style.display = 'none';
-            appendMessage(data.santaReply, 'santa');
-        } catch (error) {
-            console.error("Ошибка:", error);
-            if (typingIndicator) typingIndicator.style.display = 'none';
-            appendMessage(UI_TEXTS[currentLang].error_santa, 'santa');
-        }
-    }
-
-    function updateInterface(lang) {
-        currentLang = lang;
-        localStorage.setItem('santaLang', lang);
-        
-        // Переключаем активный вид носочков
-        document.querySelectorAll('.lang-sock').forEach(btn => {
-            btn.classList.toggle('active', btn.dataset.lang === lang);
-        });
-        
-        // Обновляем текстовые элементы, если они есть на текущей странице
-        const titleEl = document.getElementById('header-title');
-        const subtitleEl = document.getElementById('header-subtitle');
-        
-        if (titleEl) titleEl.textContent = UI_TEXTS[lang].title;
-        if (subtitleEl) subtitleEl.textContent = UI_TEXTS[lang].subtitle;
-        if (userInput) userInput.placeholder = UI_TEXTS[lang].input_placeholder;
-        if (wishlistLink) wishlistLink.textContent = UI_TEXTS[lang].wishlist_link;
-        
-        // Обновляем текст под QR (ищем на обеих страницах)
-        if (qrTextNormal) qrTextNormal.textContent = UI_TEXTS[lang].qr_support;
-        if (qrTextWishlist) qrTextWishlist.textContent = UI_TEXTS[lang].qr_support;
-        
-        loadHistory();
-    }
-
-    // Слушатель для переключения языков
-    const socksContainer = document.getElementById('language-socks');
-    if (socksContainer) {
-        socksContainer.addEventListener('click', (e) => {
-            const btn = e.target.closest('.lang-sock');
-            if (btn) updateInterface(btn.dataset.lang);
-        });
-    }
+    chatBox = document.getElementById('chat-box');
+    typingIndicator = document.getElementById('typing-indicator');
+    userInput = document.getElementById('user-input');
+    chatForm = document.getElementById('chat-form');
 
     if (chatForm) chatForm.addEventListener('submit', handleChat);
-    
-    updateInterface(currentLang);
+    loadHistory();
 });
 
-function initSnow() {
-    if (document.getElementById('snow-canvas')) return;
-    const canvas = document.createElement('canvas');
-    canvas.id = 'snow-canvas';
-    document.body.prepend(canvas);
-    const ctx = canvas.getContext('2d');
-    let flakes = [];
-    function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
-    window.onresize = resize; resize();
-    for(let i=0; i<100; i++) flakes.push({x: Math.random()*canvas.width, y: Math.random()*canvas.height, r: Math.random()*3+1, d: Math.random()*1});
-    function draw() {
-        ctx.clearRect(0,0,canvas.width, canvas.height); ctx.fillStyle = "white"; ctx.beginPath();
-        flakes.forEach(f => {
-            ctx.moveTo(f.x, f.y); ctx.arc(f.x, f.y, f.r, 0, Math.PI*2, true);
-            f.y += Math.pow(f.d, 2) + 1;
-            if(f.y > canvas.height) { f.y = -10; f.x = Math.random()*canvas.width; }
-        });
-        ctx.fill(); requestAnimationFrame(draw);
+function saveHistory() {
+    if (chatBox) localStorage.setItem('santaChatHistory_' + currentLang, chatBox.innerHTML);
+}
+
+function loadHistory() {
+    if (!chatBox) return;
+    const history = localStorage.getItem('santaChatHistory_' + currentLang);
+    
+    if (history && history.trim().length > 10) {
+        chatBox.innerHTML = history;
+    } else {
+        chatBox.innerHTML = '';
+        const welcomeVideos = {
+            'ru': "http://googleusercontent.com/generated_video_content/2879041984064999763",
+            'en': "http://googleusercontent.com/generated_video_content/10944891794765588936",
+            'fr': "http://googleusercontent.com/generated_video_content/3477560230210803062",
+            'de': "http://googleusercontent.com/generated_video_content/10944891794765588936",
+            'es': "http://googleusercontent.com/generated_video_content/10944891794765588936"
+        };
+        appendMessage(welcomeVideos[currentLang] || welcomeVideos['en'], 'santa', true);
+        setTimeout(() => appendMessage(UI_TEXTS[currentLang].welcome, 'santa'), 1500);
     }
-    draw();
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+function appendMessage(content, sender, isVideo = false) {
+    if (!chatBox) return;
+    const div = document.createElement('div');
+    div.classList.add('message', sender);
+
+    if (isVideo) {
+        div.innerHTML = `<div class="video-container" style="margin: 10px 0;"><video width="100%" controls autoplay style="border-radius: 15px; border: 3px solid #d42426;"><source src="${content}" type="video/mp4"></video></div>`;
+    } else {
+        div.innerHTML = `<p>${content.replace(/\n/g, '<br>')}</p>`;
+    }
+
+    chatBox.appendChild(div);
+    chatBox.scrollTop = chatBox.scrollHeight;
+    if (!isVideo) saveHistory();
+}
+
+async function handleChat(e) {
+    e.preventDefault();
+    const msg = userInput.value.trim();
+    if (!msg) return;
+
+    appendMessage(msg, 'user');
+    userInput.value = '';
+    if (typingIndicator) {
+        typingIndicator.textContent = UI_TEXTS[currentLang].typing;
+        typingIndicator.style.display = 'block';
+    }
+
+    try {
+        const response = await fetch('https://santaai-melania-project.onrender.com/api/santa-chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: msg, lang: currentLang })
+        });
+        const data = await response.json();
+        if (typingIndicator) typingIndicator.style.display = 'none';
+        
+        if (data.videoUrl) appendMessage(data.videoUrl, 'santa', true);
+        if (data.santaReply) appendMessage(data.santaReply, 'santa');
+    } catch (err) {
+        if (typingIndicator) typingIndicator.style.display = 'none';
+        appendMessage(UI_TEXTS[currentLang].error_santa, 'santa');
+    }
 }
