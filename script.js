@@ -1,4 +1,4 @@
-// 1. Все тексты и переводы интерфейса
+// 1. Полные тексты интерфейса, включая заголовок Добрых дел
 const UI_TEXTS = {
     'ru': { title: 'Санта Клаус', welcome: 'Хо-хо-хо! Я — Санта Клаус. Как тебя зовут?', typing: 'Санта записывает видео...', error_santa: 'Олени запутались, попробуй через 30 сек!', good_deeds: 'Наши Добрые Дела 📸' },
     'en': { title: 'Santa Claus', welcome: 'Ho-ho-ho! I am Santa Claus. What is your name?', typing: 'Santa is recording...', error_santa: 'Try again in 30 seconds!', good_deeds: 'Our Good Deeds 📸' },
@@ -7,53 +7,40 @@ const UI_TEXTS = {
     'es': { title: 'Papá Noel', welcome: 'Soy Papá Noel. ¿Cómo te llamas?', typing: 'Escribiendo...', error_santa: '¡Inténtalo de nuevo!', good_deeds: 'Nuestras buenas acciones 📸' }
 };
 
-// 2. Глобальные переменные
+// 2. Глобальные переменные, доступные всем функциям
 let currentLang = localStorage.getItem('santaLang') || 'ru';
 let chatBox, typingIndicator, userInput, chatForm;
 
-// 3. Главная функция инициализации
+// 3. Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', () => {
-    // Элементы чата
     chatBox = document.getElementById('chat-box');
     typingIndicator = document.getElementById('typing-indicator');
     userInput = document.getElementById('user-input');
     chatForm = document.getElementById('chat-form');
 
-    // Кнопки языков
+    // Логика переключения языков
     document.querySelectorAll('.lang-btn').forEach(btn => {
         btn.addEventListener('click', () => {
-            const lang = btn.getAttribute('data-lang');
-            currentLang = lang;
-            localStorage.setItem('santaLang', lang);
-            updateInterface(); // Обновляем текст без перезагрузки
-            location.reload(); // Перезагружаем для сброса чата под новый язык
+            currentLang = btn.getAttribute('data-lang');
+            localStorage.setItem('santaLang', currentLang);
+            location.reload(); 
         });
     });
 
-    // Если мы на странице отчетов — выводим дела
+    // Отображение Добрых дел, если мы на странице отчетов
     if (document.getElementById('reports-container')) {
         displayReports();
     }
 
     if (chatForm) chatForm.addEventListener('submit', handleChat);
-    
-    // Запуск приветствия (только для главной страницы чата)
     if (chatBox) loadHistory();
 });
 
-// 4. Функция перевода интерфейса (чтобы языки работали)
-function updateInterface() {
-    const texts = UI_TEXTS[currentLang];
-    const titleEl = document.querySelector('header h1') || document.querySelector('.reports-box h2');
-    if (titleEl) titleEl.textContent = texts.title || texts.good_deeds;
-}
-
-// 5. Функция отображения "Добрых Дел" (возвращаем как было)
+// 4. Функция для вывода карточек "Добрых дел"
 function displayReports() {
     const container = document.getElementById('reports-container');
     if (!container) return;
 
-    // Твой список добрых дел
     const reports = [
         { name: "Мелания", task: "Помогла детям собрать подарки", date: "25.12.2025" },
         { name: "Netizen", task: "Настроил видео для Санты", date: "26.12.2025" }
@@ -67,7 +54,7 @@ function displayReports() {
     `).join('');
 }
 
-// 6. Чат и Видео (твоя новая крутая фишка)
+// 5. Обработка сообщений с поддержкой видео
 function appendMessage(content, sender, isVideo = false) {
     if (!chatBox) return;
     const div = document.createElement('div');
@@ -89,7 +76,6 @@ function loadHistory() {
     if (history && history.trim().length > 10) {
         chatBox.innerHTML = history;
     } else {
-        // Ссылка на твое видео-приветствие
         const welcomeVideo = "https://v.d-id.com/p/voc_7n1j7z0z/talk_7n1j7z0z/video.mp4"; 
         appendMessage(welcomeVideo, 'santa', true);
         setTimeout(() => appendMessage(UI_TEXTS[currentLang].welcome, 'santa'), 1500);
