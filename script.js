@@ -1,3 +1,4 @@
+// 1. Тексты интерфейса
 const UI_TEXTS = {
     'ru': { title: 'Санта Клаус', welcome: 'Хо-хо-хо! Я — Санта Клаус. Как тебя зовут?', typing: 'Санта записывает видео...', error_santa: 'Олени запутались, попробуй через 30 сек!', good_deeds: 'Наши Добрые Дела 📸' },
     'en': { title: 'Santa Claus', welcome: 'Ho-ho-ho! I am Santa Claus. What is your name?', typing: 'Santa is recording...', error_santa: 'Try again in 30 seconds!', good_deeds: 'Our Good Deeds 📸' },
@@ -15,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
     userInput = document.getElementById('user-input');
     chatForm = document.getElementById('chat-form');
 
-    // Логика переключения языков
+    // Кнопки языков
     document.querySelectorAll('.lang-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             currentLang = btn.getAttribute('data-lang');
@@ -24,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Отображение Добрых дел (Reports)
+    // Если мы на странице отчетов
     if (document.getElementById('reports-container')) {
         displayReports();
     }
@@ -79,7 +80,10 @@ async function handleChat(e) {
     if (!msg) return;
     appendMessage(msg, 'user');
     userInput.value = '';
-    if (typingIndicator) typingIndicator.style.display = 'block';
+    if (typingIndicator) {
+        typingIndicator.style.display = 'block';
+        typingIndicator.textContent = UI_TEXTS[currentLang].typing;
+    }
     try {
         const response = await fetch('https://santaai-melania-project.onrender.com/api/santa-chat', {
             method: 'POST',
