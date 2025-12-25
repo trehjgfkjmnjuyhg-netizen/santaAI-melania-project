@@ -1,55 +1,84 @@
 import os
+import time
+import requests
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from google import genai
-from google.genai import types
-
-# Ключ будет браться из настроек Render (Environment Variables)
-API_KEY = os.environ.get("GEMINI_API_KEY") 
+import google.generativeai as genai
 
 app = Flask(__name__)
 CORS(app)
 
-client = None
-try:
-    if API_KEY:
-        client = genai.Client(api_key=API_KEY)
-except Exception as e:
-    print(f"Ошибка API: {e}")
+# Настройка Gemini
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+model = genai.GenerativeModel('gemini-pro')
 
-ERROR_MESSAGES = {
-    "ru": "Санта кормит своих оленей, напиши ему через 30 секунд и он обязательно ответит!",
-    "en": "Santa is feeding his reindeer, write to him in 30 seconds and he will definitely answer!",
-    "de": "Der Weihnachtsmann füttert seine Rentiere, schreib ему in 30 Sekunden и er wird bestimmt antworten!",
-    "fr": "Le Père Noël nourrit ses rennes, écrivez-lui dans 30 secondes et il répondra certainement !",
-    "es": "¡Papá Noel está alimentando a sus renos, escríbele в 30 segundos y te responderá sin duda!"
-}
+# Настройки D-ID
+DID_API_KEY = os.getenv("DID_API_KEY")
+SANTA_PHOTO = os.getenv("SANTA_IMAGE_URL")
+
+def create_santa_video(text, lang):
+    url = "https://api.d-id.com/talks"
+    voices = {
+        "ru": "ru-RU-DmitryNeural", 
+        "en": "en-US-ChristopherNeural",
+        "fr": "fr-FR-HenriNeural", 
+        "de": "de-DE-ConradNeural", 
+        "es": "es-ES-AlvaroNeural"
+    }
+    voice_id = voices.get(lang, "ru-RU-DmitryNeural")
+    
+    payload = {
+        "script": {
+            "type": "text", 
+            "subtitles": "false",
+            "provider": {"type": "microsoft", "voice_id": voice_id}, 
+            "input": text
+        },
+        "config": {"fluent": "true", "pad_audio": "0.0"},
+        "source_url": SANTA_PHOTO
+    }
+    
+    headers = {
+        "accept": "application/json", 
+        "content-type": "application/json",
+        "authorization": f"Basic {DID_API_KEY}"
+    }
+
+    try:
+        res = requests.post(url, json=payload, headers=headers)
+        talk_id = res.json().get("id")
+        if not talk_id: return None
+        
+        for _ in range(30):
+            status_res = requests.get(f"{url}/{talk_id}", headers=headers)
+            data = status_res.json()
+            if data.get("status") == "done":
+                return data.get("result_url")
+            time.sleep(2)
+    except:
+        return None
+    return None
 
 @app.route('/api/santa-chat', methods=['POST'])
 def santa_chat():
-    data = request.get_json()
-    user_message = data.get('message', '')
-    system_prompt = data.get('systemPrompt', 'Я — Санта Клаус.')
-    history_data = data.get('history', [])
-
-    lang_code = "ru"
-    if "Santa" in system_prompt: lang_code = "en"
+    data = request.json
+    user_msg = data.get("message")
+    lang = data.get("lang", "ru")
     
-    contents = []
-    for entry in history_data:
-        role = "model" if entry['role'] == 'assistant' else "user"
-        contents.append(types.Content(role=role, parts=[types.Part(text=entry['content'])]))
-    contents.append(types.Content(role="user", parts=[types.Part(text=user_message)]))
-
     try:
-        response = client.models.generate_content(
-            model='gemini-2.0-flash-exp',
-            contents=contents,
-            config=types.GenerateContentConfig(system_instruction=system_prompt, temperature=0.7)
-        )
-        return jsonify({"santaReply": response.text}), 200
+        # Ответ от Gemini
+        response = model.generate_content(f"Ты — добрый Санта Клаус. Ответь кратко (2 предложения) на языке {lang} на вопрос: {user_msg}")
+        santa_text = response.text
+        
+        # Генерация видео
+        video_url = create_santa_video(santa_text, lang)
+        
+        return jsonify({
+            "santaReply": santa_text, 
+            "videoUrl": video_url
+        })
     except Exception as e:
-        return jsonify({"santaReply": ERROR_MESSAGES.get(lang_code, ERROR_MESSAGES["ru"])}), 500
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True, port=int(os.environ.get("PORT", 5001)), host='0.0.0.0')
+    app.run(host='0.0.0.0', port=10000)
