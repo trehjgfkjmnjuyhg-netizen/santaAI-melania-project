@@ -8,58 +8,68 @@ import google.generativeai as genai
 app = Flask(__name__)
 CORS(app)
 
-# Настройки из вашего Render Environment
+# Ключи из твоего Render Environment
 GEMINI_KEY = os.getenv("GEMINI_API_KEY")
-PHOTO_URL = os.getenv("SANTA_IMAGE_URL")
-# Ваш подтвержденный токен D-ID (Email + Ключ JgC42cg_IgxYY3mSM4Ns0)
-AUTH_TOKEN = "dHJlaGpnZmtqbW5qdXloZ0BnbWFpbC5jb206SmdDNDJjZ19JZ3hZWTNtU000TnMw"
+SANTA_PHOTO = os.getenv("SANTA_IMAGE_URL")
+
+# Твой личный закодированный токен (Email + Ключ JgC42cg_IgxYY3mSM4Ns0)
+# Прописан напрямую, чтобы исключить любые ошибки кодирования
+D_ID_AUTH = "dHJlaGpnZmtqbW5qdXloZ0BnbWFpbC5jb206SmdDNDJjZ19JZ3hZWTNtU000TnMw"
 
 if GEMINI_KEY:
     genai.configure(api_key=GEMINI_KEY)
     model = genai.GenerativeModel('gemini-pro')
 
-def create_santa_video(text, lang):
+def create_video(text, lang):
+    print(f"[LOG] Попытка создать видео. Язык: {lang}")
     url = "https://api.d-id.com/talks"
+    
     voices = {
         "ru": "ru-RU-DmitryNeural", "en": "en-US-ChristopherNeural",
         "de": "de-DE-ConradNeural", "fr": "fr-FR-HenriNeural", "es": "es-ES-AlvaroNeural"
     }
     voice_id = voices.get(lang, "ru-RU-DmitryNeural")
-    
-    payload = {
-        "script": {
-            "type": "text", 
-            "subtitles": "false",
-            "provider": {"type": "microsoft", "voice_id": voice_id}, 
-            "input": text
-        },
-        "config": {"fluent": "true", "pad_audio": "0.0"},
-        "source_url": PHOTO_URL
+
+    headers = {
+        "Authorization": f"Basic {D_ID_AUTH}",
+        "Content-Type": "application/json"
     }
     
-    headers = {
-        "accept": "application/json", 
-        "content-type": "application/json",
-        "authorization": f"Basic {AUTH_TOKEN}" 
+    body = {
+        "source_url": SANTA_PHOTO,
+        "script": {
+            "type": "text",
+            "input": text,
+            "provider": {"type": "microsoft", "voice_id": voice_id}
+        },
+        "config": {"fluent": "true", "pad_audio": "0.0"}
     }
 
     try:
-        res = requests.post(url, json=payload, headers=headers, timeout=15)
+        # Шаг 1: Отправка задачи
+        res = requests.post(url, json=body, headers=headers, timeout=15)
         if res.status_code not in [200, 201]:
-            print(f"D-ID API Error: {res.text}")
+            print(f"[D-ID ERROR] Статус: {res.status_code}, Ответ: {res.text}")
             return None
         
         talk_id = res.json().get("id")
-        for _ in range(30):
+        print(f"[LOG] Задача принята D-ID. ID: {talk_id}")
+
+        # Шаг 2: Ожидание (до 30 сек)
+        for i in range(15):
             time.sleep(2)
             check = requests.get(f"{url}/{talk_id}", headers=headers)
             data = check.json()
-            if data.get("status") == "done":
+            status = data.get("status")
+            print(f"[LOG] Статус видео (попытка {i+1}): {status}")
+            
+            if status == "done":
                 return data.get("result_url")
-            if data.get("status") == "error":
+            if status == "error":
+                print(f"[D-ID ERROR] Сбой генерации: {data}")
                 return None
     except Exception as e:
-        print(f"Video Error: {str(e)}")
+        print(f"[CRITICAL ERROR] {str(e)}")
         return None
     return None
 
@@ -67,19 +77,20 @@ def create_santa_video(text, lang):
 def santa_chat():
     try:
         data = request.json
-        user_msg = data.get("message", "")
+        msg = data.get("message", "")
         lang = data.get("lang", "ru")
-        
+
         # 1. Текст от Gemini
-        prompt = f"Ты — Санта. Ответь ребенку кратко (2 фразы) на языке {lang}: {user_msg}"
-        response = model.generate_content(prompt)
-        santa_text = response.text
-        
+        response = model.generate_content(f"Ты Санта Клаус. Кратко и весело ответь на {lang}: {msg}")
+        text = response.text
+        print(f"[LOG] Текст от Gemini: {text}")
+
         # 2. Видео от D-ID
-        video_url = create_santa_video(santa_text, lang)
-        
-        return jsonify({"santaReply": santa_text, "videoUrl": video_url})
+        video_url = create_video(text, lang)
+
+        return jsonify({"santaReply": text, "videoUrl": video_url})
     except Exception as e:
+        print(f"[SERVER ERROR] {str(e)}")
         return jsonify({"santaReply": "Хо-хо-хо! Попробуй еще раз!", "videoUrl": None}), 200
 
 if __name__ == '__main__':
