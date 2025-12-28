@@ -1,63 +1,101 @@
 const UI_TEXTS = {
     'ru': { welcome: 'Хо-хо-хо! Я — Санта Клаус. Как тебя зовут?', typing: 'Санта записывает видео...', error: 'Олени застряли в снегу!', good_deeds: 'Наши Добрые Дела' },
     'en': { welcome: 'Ho-ho-ho! I am Santa Claus. What is your name?', typing: 'Santa is recording...', error: 'The reindeer are stuck!', good_deeds: 'Our Good Deeds' },
-    'fr': { welcome: 'Je suis le Père Noël. Quel est ton nom?', typing: 'Écrit...', error: 'Erreur!', good_deeds: 'Nos bonnes actions' },
+    'fr': { welcome: 'Je suis le Père Noël. Quel est ton nom?', typing: 'Le Père Noël écrit...', error: 'Erreur!', good_deeds: 'Nos bonnes actions' },
     'de': { welcome: 'Ich bin der Weihnachtsmann. Как тебя зовут?', typing: 'Schreibt...', error: 'Fehler!', good_deeds: 'Gute Taten' },
-    'es': { welcome: 'Soy Papá Noel. ¿Cómo te llamas?', typing: 'Escribiendo...', error: '¡Error!', good_deeds: 'Buenas acciones' }
+    'es': { welcome: 'Soy Papá Noel. ¿Cómo te llamas?', typing: 'Escribiendo...', error: 'Error!', good_deeds: 'Buenas acciones' }
 };
 
 let currentLang = localStorage.getItem('santaLang') || 'ru';
 
 document.addEventListener('DOMContentLoaded', () => {
     const chatBox = document.getElementById('chat-box');
+    const chatForm = document.getElementById('chat-form');
+    const userInput = document.getElementById('user-input');
     const typingIndicator = document.getElementById('typing-indicator');
 
-    // Кнопки переключения языков
+    // 1. Кнопки языков
     document.querySelectorAll('.lang-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             currentLang = btn.getAttribute('data-lang');
             localStorage.setItem('santaLang', currentLang);
-            location.reload(); // Перезагрузка для применения языка
+            location.reload(); 
         });
     });
 
-    // Обработка формы чата
-    document.getElementById('chat-form')?.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const input = document.getElementById('user-input');
-        const msg = input.value.trim();
-        if (!msg) return;
+    // 2. Отображение отчетов (на странице Добрых Дел)
+    if (document.getElementById('reports-container')) {
+        const container = document.getElementById('reports-container');
+        const reports = [
+            { name: "Мелания", task: "Помогла детям собрать игрушки", date: "25.12.2025" },
+            { name: "Netizen", task: "Настроил видео для Санты", date: "28.12.2025" },
+            { name: "Санта", task: "Разослал подарки всем помощникам", date: "29.12.2025" }
+        ];
 
-        appendMessage(msg, 'user');
-        input.value = '';
-        typingIndicator.style.display = 'block';
+        container.innerHTML = reports.map(r => `
+            <div class="report-card" style="background:white; padding:15px; margin:10px auto; border-radius:12px; color:#333; max-width:90%; box-shadow:0 4px 8px rgba(0,0,0,0.1);">
+                <strong style="color:#d42426; font-size:1.1em;">${r.name}</strong>
+                <p style="margin: 5px 0;">${r.task}</p>
+                <small style="color:#888;">${r.date}</small>
+            </div>
+        `).join('');
+    }
 
-        try {
-            const response = await fetch('https://santaai-melania-project.onrender.com/api/santa-chat', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: msg, lang: currentLang })
-            });
-            const data = await response.json();
-            typingIndicator.style.display = 'none';
+    // 3. Чат
+    if (chatForm) {
+        chatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const msg = userInput.value.trim();
+            if (!msg) return;
 
-            if (data.videoUrl) appendMessage(data.videoUrl, 'santa', true);
-            appendMessage(data.santaReply, 'santa');
-        } catch (err) {
-            typingIndicator.style.display = 'none';
-            appendMessage(UI_TEXTS[currentLang].error, 'santa');
+            appendMessage(msg, 'user');
+            userInput.value = '';
+            
+            typingIndicator.style.display = 'block';
+            typingIndicator.textContent = UI_TEXTS[currentLang].typing;
+
+            try {
+                const response = await fetch('https://santaai-melania-project.onrender.com/api/santa-chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: msg, lang: currentLang })
+                });
+                const data = await response.json();
+                
+                typingIndicator.style.display = 'none';
+                
+                if (data.videoUrl) {
+                    appendMessage(data.videoUrl, 'santa', true);
+                }
+                appendMessage(data.santaReply, 'santa');
+
+            } catch (err) {
+                typingIndicator.style.display = 'none';
+                appendMessage(UI_TEXTS[currentLang].error, 'santa');
+            }
+        });
+
+        // Приветствие
+        if (!localStorage.getItem('santaChatHistory_' + currentLang)) {
+            setTimeout(() => appendMessage(UI_TEXTS[currentLang].welcome, 'santa'), 1000);
+        } else {
+            chatBox.innerHTML = localStorage.getItem('santaChatHistory_' + currentLang);
         }
-    });
+    }
 
     function appendMessage(content, sender, isVideo = false) {
+        if (!chatBox) return;
         const div = document.createElement('div');
-        div.className = `message ${sender}`;
+        div.classList.add('message', sender);
+        
         if (isVideo) {
-            div.innerHTML = `<video width="100%" controls autoplay style="border-radius:15px;"><source src="${content}" type="video/mp4"></video>`;
+            div.innerHTML = `<div style="margin:10px 0;"><video width="100%" controls autoplay style="border-radius:15px; border:2px solid #d42426;"><source src="${content}" type="video/mp4"></video></div>`;
         } else {
             div.innerHTML = `<p>${content}</p>`;
         }
+        
         chatBox.appendChild(div);
         chatBox.scrollTop = chatBox.scrollHeight;
+        if (!isVideo) localStorage.setItem('santaChatHistory_' + currentLang, chatBox.innerHTML);
     }
 });
