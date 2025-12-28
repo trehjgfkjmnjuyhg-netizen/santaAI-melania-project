@@ -8,68 +8,79 @@ import google.generativeai as genai
 app = Flask(__name__)
 CORS(app)
 
-# === ТВОИ КЛЮЧИ ===
+# Настройки из вашего Render Environment
 GEMINI_KEY = os.getenv("GEMINI_API_KEY")
-SANTA_PHOTO = os.getenv("SANTA_IMAGE_URL")
-# Это твой рабочий токен (Email + Ключ JgC42cg_IgxYY3mSM4Ns0)
-D_ID_TOKEN = "dHJlaGpnZmtqbW5qdXloZ0BnbWFpbC5jb206SmdDNDJjZ19JZ3hZWTNtU000TnMw"
+PHOTO_URL = os.getenv("SANTA_IMAGE_URL")
+# Ваш подтвержденный токен D-ID (Email + Ключ JgC42cg_IgxYY3mSM4Ns0)
+AUTH_TOKEN = "dHJlaGpnZmtqbW5qdXloZ0BnbWFpbC5jb206SmdDNDJjZ19JZ3hZWTNtU000TnMw"
 
 if GEMINI_KEY:
     genai.configure(api_key=GEMINI_KEY)
     model = genai.GenerativeModel('gemini-pro')
 
-def get_video(text):
+def create_santa_video(text, lang):
     url = "https://api.d-id.com/talks"
-    headers = {
-        "Authorization": f"Basic {D_ID_TOKEN}",
-        "Content-Type": "application/json"
+    voices = {
+        "ru": "ru-RU-DmitryNeural", "en": "en-US-ChristopherNeural",
+        "de": "de-DE-ConradNeural", "fr": "fr-FR-HenriNeural", "es": "es-ES-AlvaroNeural"
     }
-    body = {
-        "source_url": SANTA_PHOTO,
+    voice_id = voices.get(lang, "ru-RU-DmitryNeural")
+    
+    payload = {
         "script": {
-            "type": "text",
-            "input": text,
-            "provider": {"type": "microsoft", "voice_id": "ru-RU-DmitryNeural"}
-        }
+            "type": "text", 
+            "subtitles": "false",
+            "provider": {"type": "microsoft", "voice_id": voice_id}, 
+            "input": text
+        },
+        "config": {"fluent": "true", "pad_audio": "0.0"},
+        "source_url": PHOTO_URL
     }
+    
+    headers = {
+        "accept": "application/json", 
+        "content-type": "application/json",
+        "authorization": f"Basic {AUTH_TOKEN}" 
+    }
+
     try:
-        res = requests.post(url, json=body, headers=headers, timeout=10)
+        res = requests.post(url, json=payload, headers=headers, timeout=15)
         if res.status_code not in [200, 201]:
             print(f"D-ID API Error: {res.text}")
             return None
         
-        task_id = res.json().get("id")
-        for _ in range(25):
+        talk_id = res.json().get("id")
+        for _ in range(30):
             time.sleep(2)
-            check = requests.get(f"{url}/{task_id}", headers=headers)
+            check = requests.get(f"{url}/{talk_id}", headers=headers)
             data = check.json()
             if data.get("status") == "done":
                 return data.get("result_url")
+            if data.get("status") == "error":
+                return None
     except Exception as e:
-        print(f"Video fail: {e}")
+        print(f"Video Error: {str(e)}")
         return None
     return None
 
 @app.route('/api/santa-chat', methods=['POST'])
-def chat():
+def santa_chat():
     try:
         data = request.json
-        msg = data.get("message", "")
+        user_msg = data.get("message", "")
+        lang = data.get("lang", "ru")
         
-        # 1. Текст
-        res = model.generate_content(f"Ты Санта. Ответь кратко (2 фразы): {msg}")
-        reply_text = res.text
+        # 1. Текст от Gemini
+        prompt = f"Ты — Санта. Ответь ребенку кратко (2 фразы) на языке {lang}: {user_msg}"
+        response = model.generate_content(prompt)
+        santa_text = response.text
         
-        # 2. Видео
-        video = get_video(reply_text)
+        # 2. Видео от D-ID
+        video_url = create_santa_video(santa_text, lang)
         
-        return jsonify({
-            "santaReply": reply_text,
-            "videoUrl": video
-        })
+        return jsonify({"santaReply": santa_text, "videoUrl": video_url})
     except Exception as e:
-        print(f"Error: {e}")
-        return jsonify({"santaReply": "Олени застряли! Попробуй еще раз.", "videoUrl": None})
+        return jsonify({"santaReply": "Хо-хо-хо! Попробуй еще раз!", "videoUrl": None}), 200
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 10000))
