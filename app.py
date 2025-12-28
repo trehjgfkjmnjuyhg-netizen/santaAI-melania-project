@@ -6,113 +6,103 @@ from flask_cors import CORS
 import google.generativeai as genai
 
 app = Flask(__name__)
-# CORS необходим, чтобы браузер не блокировал запросы к Render
-CORS(app)
+CORS(app) # Позволяет твоему сайту на GitHub общаться с этим сервером
 
-# === КОНФИГУРАЦИЯ ===
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-SANTA_IMAGE_URL = os.getenv("SANTA_IMAGE_URL")
-
-# Твой личный закодированный токен (Email + API Key)
-# Это решает проблему ошибки авторизации "Basic Auth"
+# === Настройки из Render Environment ===
+GEMINI_KEY = os.getenv("GEMINI_API_KEY")
+PHOTO_URL = os.getenv("SANTA_IMAGE_URL")
+# Твой личный токен (Email + Ключ JgC42cg_IgxYY3mSM4Ns0)
+# Прописан напрямую, чтобы исключить ошибки кодирования в переменных Render
 AUTH_TOKEN = "dHJlaGpnZmtqbW5qdXloZ0BnbWFpbC5jb206SmdDNDJjZ19JZ3hZWTNtU000TnMw"
 
-if not GEMINI_API_KEY:
-    print("❌ ОШИБКА: GEMINI_API_KEY не найден в Environment")
+if GEMINI_KEY:
+    genai.configure(api_key=GEMINI_KEY)
+    model = genai.GenerativeModel('gemini-pro')
 
-# === Gemini Init ===
-genai.configure(api_key=GEMINI_API_KEY)
-model = genai.GenerativeModel("gemini-pro")
-
-# === Helpers ===
-def generate_santa_text(prompt: str, lang: str) -> str:
-    """Генерирует добрый ответ от Санты через Gemini"""
-    full_prompt = f"Ты — добрый, весёлый Санта Клаус. Ответь ребенку на языке: {lang}. Будь краток (максимум 2 предложения).\nВопрос: {prompt}"
-    try:
-        response = model.generate_content(full_prompt)
-        return response.text.strip()
-    except Exception as e:
-        print(f"Gemini Error: {e}")
-        return "Хо-хо-хо! Счастливого Рождества!"
-
-def generate_santa_video(text: str, lang: str) -> str:
-    """Создает видео через D-ID API"""
+def create_santa_video(text, lang):
+    """Генерация видео через D-ID API"""
+    print(f"[INFO] Начало генерации видео. Язык: {lang}")
     url = "https://api.d-id.com/talks"
     
-    # Подбор голоса под выбранный язык
+    # Голоса для всех языков на твоем сайте
     voices = {
-        "ru": "ru-RU-DmitryNeural",
+        "ru": "ru-RU-DmitryNeural", 
         "en": "en-US-ChristopherNeural",
         "fr": "fr-FR-HenriNeural",
         "de": "de-DE-ConradNeural",
         "es": "es-ES-AlvaroNeural"
     }
     voice_id = voices.get(lang, "ru-RU-DmitryNeural")
-
-    headers = {
-        "Authorization": f"Basic {AUTH_TOKEN}",
-        "Content-Type": "application/json",
-        "accept": "application/json"
-    }
-
+    
     payload = {
-        "source_url": SANTA_IMAGE_URL,
         "script": {
-            "type": "text",
-            "input": text,
-            "provider": { "type": "microsoft", "voice_id": voice_id }
+            "type": "text", 
+            "subtitles": "false",
+            "provider": {"type": "microsoft", "voice_id": voice_id}, 
+            "input": text
         },
-        "config": { "fluent": "true", "pad_audio": "0.0" }
+        "config": {"fluent": "true", "pad_audio": "0.0"},
+        "source_url": PHOTO_URL
+    }
+    
+    headers = {
+        "accept": "application/json", 
+        "content-type": "application/json",
+        "authorization": f"Basic {AUTH_TOKEN}"
     }
 
     try:
-        # 1. Создание задачи
-        res = requests.post(url, headers=headers, json=payload, timeout=10)
+        # Шаг 1: Создаем задачу
+        res = requests.post(url, json=payload, headers=headers, timeout=10)
         if res.status_code not in [200, 201]:
-            print(f"❌ D-ID Creation Error: {res.status_code} - {res.text}")
+            print(f"[ERROR] D-ID Error: {res.text}")
             return None
         
         talk_id = res.json().get("id")
         
-        # 2. Ожидание готовности (до 30 попыток)
-        for i in range(30):
+        # Шаг 2: Ждем видео (до 60 секунд)
+        for attempt in range(30):
             time.sleep(2)
-            status_res = requests.get(f"{url}/{talk_id}", headers=headers, timeout=10)
-            if status_res.status_code == 200:
-                data = status_res.json()
+            check = requests.get(f"{url}/{talk_id}", headers=headers)
+            if check.status_code == 200:
+                data = check.json()
                 if data.get("status") == "done":
+                    print(f"[SUCCESS] Видео готово: {data.get('result_url')}")
                     return data.get("result_url")
                 if data.get("status") == "error":
-                    print(f"❌ D-ID Processing Error: {data}")
+                    print(f"[ERROR] D-ID Processing Error")
                     return None
-        return None
     except Exception as e:
-        print(f"❌ Video Helper Error: {e}")
+        print(f"[CRITICAL] {str(e)}")
         return None
+    return None
 
-# === API Routes ===
-@app.route("/api/santa-chat", methods=["POST"])
-def chat():
-    data = request.json
-    user_message = data.get("message", "").strip()
-    lang = data.get("lang", "ru")
+@app.route('/api/santa-chat', methods=['POST'])
+def santa_chat():
+    try:
+        data = request.json
+        user_msg = data.get("message", "")
+        lang = data.get("lang", "ru")
+        
+        # 1. Текст от Gemini
+        prompt = f"Ты добрый Санта. Ответь кратко на языке {lang} (2 предложения): {user_msg}"
+        response = model.generate_content(prompt)
+        santa_text = response.text
 
-    if not user_message:
-        return jsonify({"error": "No message"}), 400
+        # 2. Видео от D-ID
+        video_url = create_santa_video(santa_text, lang)
+        
+        return jsonify({
+            "santaReply": santa_text, 
+            "videoUrl": video_url
+        }), 200
+    except Exception as e:
+        print(f"[GLOBAL ERROR] {str(e)}")
+        return jsonify({
+            "santaReply": "Хо-хо-хо! Олени застряли в сугробе. Давай пообщаемся текстом!",
+            "videoUrl": None
+        }), 200
 
-    print(f"--- Новый запрос от пользователя: {user_message} ---")
-    
-    # 1. Сначала текст
-    reply_text = generate_santa_text(user_message, lang)
-    
-    # 2. Потом видео
-    video_url = generate_santa_video(reply_text, lang)
-
-    return jsonify({
-        "santaReply": reply_text,
-        "videoUrl": video_url
-    })
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     port = int(os.environ.get("PORT", 10000))
-    app.run(host="0.0.0.0", port=port)
+    app.run(host='0.0.0.0', port=port)
