@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Показ отчетов
+    // Показ отчетов (Добрые Дела)
     if (document.getElementById('reports-container')) {
         const container = document.getElementById('reports-container');
         const reports = [
@@ -52,7 +52,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 const data = await response.json();
                 typingIndicator.style.display = 'none';
+                
+                // Сначала выводим видео, если оно есть
                 if (data.videoUrl) appendMessage(data.videoUrl, 'santa', true);
+                // Затем выводим текст
                 appendMessage(data.santaReply, 'santa');
             } catch (err) {
                 typingIndicator.style.display = 'none';
