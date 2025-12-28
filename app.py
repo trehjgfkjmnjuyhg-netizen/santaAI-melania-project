@@ -18,20 +18,11 @@ if GEMINI_KEY:
     model = genai.GenerativeModel('gemini-pro')
 
 def create_santa_video(text, lang):
-    if not DID_KEY or not PHOTO_URL:
-        return None
-    
     url = "https://api.d-id.com/talks"
-    # Твой закодированный токен (почта + ключ)
+    # ЭТО ВАЖНО: Полный закодированный токен (почта + ваш ключ)
     auth_token = "dHJlaGpnZmtqbW5qdXloZ0BnbWFpbC5jb206SmdDNDJjZ19JZ3hZWTNtU000TnMw"
     
-    voices = {
-        "ru": "ru-RU-DmitryNeural", 
-        "en": "en-US-ChristopherNeural",
-        "fr": "fr-FR-HenriNeural",
-        "de": "de-DE-ConradNeural",
-        "es": "es-ES-AlvaroNeural"
-    }
+    voices = {"ru": "ru-RU-DmitryNeural", "en": "en-US-ChristopherNeural"}
     voice_id = voices.get(lang, "ru-RU-DmitryNeural")
     
     payload = {
@@ -42,30 +33,34 @@ def create_santa_video(text, lang):
             "input": text
         },
         "config": {"fluent": "true", "pad_audio": "0.0"},
-        "source_url": PHOTO_URL
+        "source_url": os.getenv("SANTA_IMAGE_URL") # Берем ссылку из Render
     }
     
     headers = {
         "accept": "application/json", 
         "content-type": "application/json",
-        "authorization": f"Basic {auth_token}"
+        "authorization": f"Basic {auth_token}" # Используем готовый токен
     }
 
     try:
         res = requests.post(url, json=payload, headers=headers)
-        if res.status_code not in [200, 201]: return None
+        if res.status_code not in [200, 201]:
+            print(f"D-ID API Error: {res.status_code} - {res.text}")
+            return None
         
         talk_id = res.json().get("id")
-        for _ in range(25): # Ждем 50 секунд максимум
+        # Ждем готовности видео
+        for _ in range(25):
             status_res = requests.get(f"{url}/{talk_id}", headers=headers)
             data = status_res.json()
-            if data.get("status") == "done": return data.get("result_url")
-            if data.get("status") == "error": return None
+            if data.get("status") == "done":
+                return data.get("result_url")
             time.sleep(2)
-    except:
+    except Exception as e:
+        print(f"Video Error: {str(e)}")
         return None
     return None
-
+   
 @app.route('/api/santa-chat', methods=['POST'])
 def santa_chat():
     try:
