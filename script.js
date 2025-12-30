@@ -1,9 +1,9 @@
 const UI_TEXTS = {
-    'ru': { welcome: 'Хо-хо-хо! Я — Санта Клаус. Как тебя зовут?', typing: 'Санта думает...', error: 'Олени застряли в снегу!', good_deeds: 'Наши Добрые Дела' },
-    'en': { welcome: 'Ho-ho-ho! I am Santa Claus. What is your name?', typing: 'Santa is thinking...', error: 'Reindeer are stuck!', good_deeds: 'Our Good Deeds' },
-    'fr': { welcome: 'Je suis le Père Noël. Quel est ton nom?', typing: 'Le Père Noël écrit...', error: 'Erreur!', good_deeds: 'Nos bonnes actions' },
-    'de': { welcome: 'Ich bin der Weihnachtsmann. Как тебя зовут?', typing: 'Schreibt...', error: 'Fehler!', good_deeds: 'Gute Taten' },
-    'es': { welcome: 'Soy Papá Noel. ¿Cómo te llamas?', typing: 'Escribiendo...', error: 'Error!', good_deeds: 'Buenas acciones' }
+    'ru': { welcome: 'Хо-хо-хо! Я — Санта Клаус. Как тебя зовут?', typing: 'Санта думает...', error: 'Олени застряли в снегу!' },
+    'en': { welcome: 'Ho-ho-ho! I am Santa Claus.', typing: 'Santa is thinking...', error: 'Reindeer are stuck!' },
+    'fr': { welcome: 'Je suis le Père Noël.', typing: 'Le Père Noël écrit...', error: 'Erreur!' },
+    'de': { welcome: 'Ich bin der Weihnachtsmann.', typing: 'Schreibt...', error: 'Fehler!' },
+    'es': { welcome: 'Soy Papá Noel.', typing: 'Escribiendo...', error: 'Error!' }
 };
 
 let currentLang = localStorage.getItem('santaLang') || 'ru';
@@ -23,20 +23,21 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Наши Добрые Дела
-    if (document.getElementById('reports-container')) {
+    // Наполнение страницы "Добрые дела"
+    const reportsContainer = document.getElementById('reports-container');
+    if (reportsContainer) {
         const reports = [
             { name: "Мелания", task: "Настроила Санте чат на нейросетях", date: "30.12.2025" },
             { name: "Помощник", task: "Украсил елку", date: "29.12.2025" }
         ];
-        document.getElementById('reports-container').innerHTML = reports.map(r => `
+        reportsContainer.innerHTML = reports.map(r => `
             <div style="background:white; padding:15px; margin:10px; border-radius:12px; color:black; border-left:5px solid red;">
                 <strong>${r.name}</strong>: ${r.task} <br><small>${r.date}</small>
             </div>
         `).join('');
     }
 
-    // Логика чата
+    // Логика отправки сообщения
     chatForm?.addEventListener('submit', async (e) => {
         e.preventDefault();
         const msg = userInput.value.trim();
