@@ -177,4 +177,4 @@ function initSnow() {
         ctx.fill(); requestAnimationFrame(draw);
     }
     draw();
-}
+    }
