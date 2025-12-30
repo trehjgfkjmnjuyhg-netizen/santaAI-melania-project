@@ -6,7 +6,7 @@ import google.generativeai as genai
 app = Flask(__name__)
 CORS(app)
 
-# Настройка Gemini
+# Настройка Gemini из переменных окружения Render
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 if GEMINI_API_KEY:
@@ -23,20 +23,29 @@ def chat():
         if not user_message:
             return jsonify({"error": "Empty message"}), 400
 
-        # Промпт для Санты
-        prompt = f"Ты — добрый Санта Клаус. Ответь ребенку на языке {lang}: {user_message}. Твой ответ должен быть коротким и праздничным."
+        # Промпт для Санты: добрый, сказочный и на нужном языке
+        prompt = (
+            f"Ты — настоящий, добрый и мудрый Санта Клаус. "
+            f"Ответь ребенку на вопрос: '{user_message}' на языке {lang}. "
+            f"Твой ответ должен быть теплым, сказочным и вдохновляющим, "
+            f"но не длиннее 3 предложений."
+        )
         
         response = model.generate_content(prompt)
         santa_text = response.text.strip()
 
+        # Возвращаем только текст
         return jsonify({
             "santaReply": santa_text,
-            "videoUrl": None  # Видео отключено
+            "videoUrl": None 
         })
 
     except Exception as e:
         print(f"Error: {str(e)}")
-        return jsonify({"santaReply": "Хо-хо-хо! С Рождеством! Давай пообщаемся чуть позже.", "videoUrl": None}), 200
+        return jsonify({
+            "santaReply": "Хо-хо-хо! Мои волшебные книги немного запылились. Давай пообщаемся через минутку!", 
+            "videoUrl": None
+        }), 200
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
