@@ -1,8 +1,8 @@
 import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from google import genai
-from google.genai import types
+# Исправленный импорт согласно требованиям новой библиотеки
+import google.generativeai as genai
 
 # Ключ будет браться из настроек Render (Environment Variables)
 API_KEY = os.environ.get("GEMINI_API_KEY") 
@@ -10,10 +10,12 @@ API_KEY = os.environ.get("GEMINI_API_KEY")
 app = Flask(__name__)
 CORS(app)
 
-client = None
+# Инициализация модели через правильный метод настройки
 try:
     if API_KEY:
-        client = genai.Client(api_key=API_KEY)
+        genai.configure(api_key=API_KEY)
+        # Создаем модель один раз при запуске
+        model = genai.GenerativeModel('gemini-pro') 
 except Exception as e:
     print(f"Ошибка API: {e}")
 
@@ -35,21 +37,30 @@ def santa_chat():
     lang_code = "ru"
     if "Santa" in system_prompt: lang_code = "en"
     
+    # Формируем историю сообщений для модели
     contents = []
     for entry in history_data:
         role = "model" if entry['role'] == 'assistant' else "user"
-        contents.append(types.Content(role=role, parts=[types.Part(text=entry['content'])]))
-    contents.append(types.Content(role="user", parts=[types.Part(text=user_message)]))
+        contents.append({"role": role, "parts": [entry['content']]})
+    
+    contents.append({"role": "user", "parts": [user_message]})
 
     try:
-        response = client.models.generate_content(
-            model='gemini-2.0-flash-exp',
-            contents=contents,
-            config=types.GenerateContentConfig(system_instruction=system_prompt, temperature=0.7)
+        # Используем метод generate_content с системной инструкцией
+        # В версии google-generativeai промпт объединяется с инструкцией
+        full_prompt = f"{system_prompt}\n\nПользователь: {user_message}"
+        
+        response = model.generate_content(
+            full_prompt,
+            generation_config={"temperature": 0.7}
         )
+        
         return jsonify({"santaReply": response.text}), 200
     except Exception as e:
+        print(f"Runtime Error: {e}")
         return jsonify({"santaReply": ERROR_MESSAGES.get(lang_code, ERROR_MESSAGES["ru"])}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True, port=int(os.environ.get("PORT", 5001)), host='0.0.0.0')
+    # Используем порт 10000, который ожидает Render по умолчанию
+    port = int(os.environ.get("PORT", 10000))
+    app.run(debug=True, port=port, host='0.0.0.0')
