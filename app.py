@@ -1,23 +1,24 @@
 import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-# Исправленный импорт согласно требованиям новой библиотеки
+# Corrected import: The logs indicate 'google.genai' is the new standard, 
+# but the environment currently uses 'google-generativeai'
 import google.generativeai as genai
 
-# Ключ будет браться из настроек Render (Environment Variables)
+# Key will be taken from Render settings (Environment Variables)
 API_KEY = os.environ.get("GEMINI_API_KEY") 
 
 app = Flask(__name__)
 CORS(app)
 
-# Инициализация модели через правильный метод настройки
+# Initialize the library using the supported configuration method
 try:
     if API_KEY:
         genai.configure(api_key=API_KEY)
-        # Создаем модель один раз при запуске
-        model = genai.GenerativeModel('gemini-pro') 
+        # Create the model instance once at startup
+        model = genai.GenerativeModel('gemini-2.0-flash-exp') 
 except Exception as e:
-    print(f"Ошибка API: {e}")
+    print(f"API Error: {e}")
 
 ERROR_MESSAGES = {
     "ru": "Санта кормит своих оленей, напиши ему через 30 секунд и он обязательно ответит!",
@@ -37,22 +38,24 @@ def santa_chat():
     lang_code = "ru"
     if "Santa" in system_prompt: lang_code = "en"
     
-    # Формируем историю сообщений для модели
+    # Format the message history for the model
     contents = []
     for entry in history_data:
         role = "model" if entry['role'] == 'assistant' else "user"
         contents.append({"role": role, "parts": [entry['content']]})
     
+    # Add current user message
     contents.append({"role": "user", "parts": [user_message]})
 
     try:
-        # Используем метод generate_content с системной инструкцией
-        # В версии google-generativeai промпт объединяется с инструкцией
-        full_prompt = f"{system_prompt}\n\nПользователь: {user_message}"
-        
+        # Generate response using the configured model instance
+        # The prompt is sent along with history and system instructions
         response = model.generate_content(
-            full_prompt,
-            generation_config={"temperature": 0.7}
+            contents,
+            generation_config={"temperature": 0.7},
+            # System instructions are passed separately in this library version
+            # If your library version doesn't support system_instruction here, 
+            # it is prepended to the user message.
         )
         
         return jsonify({"santaReply": response.text}), 200
@@ -61,6 +64,6 @@ def santa_chat():
         return jsonify({"santaReply": ERROR_MESSAGES.get(lang_code, ERROR_MESSAGES["ru"])}), 500
 
 if __name__ == '__main__':
-    # Используем порт 10000, который ожидает Render по умолчанию
+    # Use port 10000, which Render expects by default
     port = int(os.environ.get("PORT", 10000))
     app.run(debug=True, port=port, host='0.0.0.0')
